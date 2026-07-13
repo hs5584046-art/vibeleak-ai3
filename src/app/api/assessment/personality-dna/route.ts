@@ -39,14 +39,31 @@ export async function POST(request: NextRequest) {
       .select("id")
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Personality DNA session creation failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Secure checkout setup failed. Please retry. If it continues, the site owner must run the latest Supabase schema and verify the production Supabase keys."
+        },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json({
       sessionId: session.id,
       sessionToken: token,
       preview
     }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "A complete valid assessment is required." }, { status: 400 });
+  } catch (caught) {
+    console.error("Personality DNA assessment processing failed", caught);
+    return NextResponse.json(
+      { error: "A complete valid assessment is required." },
+      { status: 400 }
+    );
   }
 }

@@ -199,12 +199,10 @@ export function PersonalityDnaExperience() {
   }
 
   async function openCheckout() {
-    let activeSession = session;
-    if (!activeSession) {
-      setStage("submitting");
-      activeSession = await createSecureSession(answers);
+    setStage("checkout");
+    if (!session) {
+      await createSecureSession(answers);
     }
-    setStage(activeSession ? "checkout" : "preview");
   }
 
   function resetAssessment() {
@@ -335,15 +333,46 @@ export function PersonalityDnaExperience() {
         </div>
       ) : null}
 
-      {stage === "checkout" && session ? (
-        <PremiumCheckout
-          sessionId={session.sessionId}
-          sessionToken={session.sessionToken}
-          restoredPayment={payment}
-          assessmentId="personality-dna"
-          reportTitle="Personality DNA report"
-          onUnlocked={(value) => unlockReport(value as PersonalityReport)}
-        />
+      {stage === "checkout" ? (
+        session ? (
+          <PremiumCheckout
+            sessionId={session.sessionId}
+            sessionToken={session.sessionToken}
+            restoredPayment={payment}
+            assessmentId="personality-dna"
+            reportTitle="Personality DNA report"
+            onUnlocked={(value) => unlockReport(value as PersonalityReport)}
+          />
+        ) : (
+          <div className="checkout-status">
+            {!error ? <span className="checkout-loader" /> : null}
+            <p className="eyebrow">{error ? "Checkout setup issue" : "Preparing secure checkout"}</p>
+            <h2>{error ? "UPI checkout could not be prepared yet." : "Creating your secure payment session…"}</h2>
+            <p>
+              {error
+                ? error
+                : "This normally takes only a moment. Your preview and answers remain saved."}
+            </p>
+            {error ? (
+              <div className="result-actions">
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => void createSecureSession(answers)}
+                >
+                  Retry checkout <ArrowRightIcon />
+                </button>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setStage("preview")}
+                >
+                  Back to preview
+                </button>
+              </div>
+            ) : null}
+          </div>
+        )
       ) : null}
 
       {stage === "status" && payment ? (

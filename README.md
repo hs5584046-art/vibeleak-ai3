@@ -158,3 +158,10 @@ Blank affiliate destinations safely open relevant internal guides instead of bro
 - `Unlock full report · ₹149` is always visible on the preview.
 - Secure checkout session creation runs in the background.
 - If session creation fails, the preview remains available and the user receives a retryable checkout message instead of being sent back to the questionnaire.
+
+## 6.0.2 checkout-opening hotfix
+
+- Clicking `Unlock full report · ₹149` opens a visible checkout setup screen immediately.
+- The UI no longer silently returns to the preview when secure session creation fails.
+- Checkout preparation errors now include retry and back actions.
+- The server logs Supabase error details without exposing secrets to users.
