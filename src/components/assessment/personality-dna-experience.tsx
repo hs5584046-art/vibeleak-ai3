@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { personalityDnaAssessment } from "@/lib/assessment/personality-dna";
+import { buildPersonalityReport } from "@/lib/assessment/engine";
 import type {
   AnswerValue,
   AssessmentAnswers,
@@ -47,6 +48,7 @@ export function PersonalityDnaExperience() {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<AssessmentAnswers>({});
   const [session, setSession] = useState<SavedSession | null>(null);
+  const [preview, setPreview] = useState<Preview | null>(null);
   const [payment, setPayment] = useState<SavedPayment | null>(null);
   const [report, setReport] = useState<PersonalityReport | null>(null);
   const [restored, setRestored] = useState(false);
@@ -107,6 +109,7 @@ export function PersonalityDnaExperience() {
         if (savedSession) {
           const parsedSession = JSON.parse(savedSession) as SavedSession;
           setSession(parsedSession);
+          setPreview(parsedSession.preview);
           if (!paymentId) setStage(savedPayment ? "checkout" : "preview");
         } else if (savedProgress && !paymentId) {
           const parsed = JSON.parse(savedProgress) as { index: number; answers: AssessmentAnswers };
@@ -139,6 +142,32 @@ export function PersonalityDnaExperience() {
   const progress = Math.round((answeredCount / personalityDnaAssessment.questions.length) * 100);
   const currentAnswer = answers[question?.id];
 
+  async function createSecureSession(nextAnswers: AssessmentAnswers) {
+    setError("");
+    try {
+      const response = await fetch("/api/assessment/personality-dna", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers: nextAnswers })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Secure checkout is temporarily unavailable.");
+
+      const nextSession: SavedSession = {
+        sessionId: data.sessionId,
+        sessionToken: data.sessionToken,
+        preview: data.preview
+      };
+      window.localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+      setSession(nextSession);
+      setPreview(nextSession.preview);
+      return nextSession;
+    } catch (sessionError) {
+      setError(sessionError instanceof Error ? sessionError.message : "Secure checkout is temporarily unavailable.");
+      return null;
+    }
+  }
+
   async function selectAnswer(value: AnswerValue) {
     const nextAnswers = { ...answers, [question.id]: value };
     setAnswers(nextAnswers);
@@ -152,42 +181,30 @@ export function PersonalityDnaExperience() {
         (item, position) => position > index && !nextAnswers[item.id]
       );
       window.setTimeout(
-        () => setIndex(
-          nextUnansweredIndex >= 0
-            ? nextUnansweredIndex
-            : Math.min(index + 1, personalityDnaAssessment.questions.length - 1)
-        ),
+        () => setIndex(nextUnansweredIndex >= 0 ? nextUnansweredIndex : Math.min(index + 1, personalityDnaAssessment.questions.length - 1)),
         120
       );
       return;
     }
 
-    setStage("submitting");
-    setError("");
-
-    const response = await fetch("/api/assessment/personality-dna", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ answers: nextAnswers })
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setError(data.error ?? "Your result could not be generated.");
-      setStage("questions");
-      return;
-    }
-
-    const nextSession: SavedSession = {
-      sessionId: data.sessionId,
-      sessionToken: data.sessionToken,
-      preview: data.preview
+    const localReport = buildPersonalityReport(nextAnswers);
+    const localPreview: Preview = {
+      profile: localReport.profile,
+      dimensions: localReport.dimensions.slice(0, 2)
     };
-
-    window.localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+    setPreview(localPreview);
     window.localStorage.removeItem(PROGRESS_KEY);
-    setSession(nextSession);
     setStage("preview");
+    void createSecureSession(nextAnswers);
+  }
+
+  async function openCheckout() {
+    let activeSession = session;
+    if (!activeSession) {
+      setStage("submitting");
+      activeSession = await createSecureSession(answers);
+    }
+    setStage(activeSession ? "checkout" : "preview");
   }
 
   function resetAssessment() {
@@ -197,6 +214,7 @@ export function PersonalityDnaExperience() {
     setAnswers({});
     setIndex(0);
     setSession(null);
+    setPreview(null);
     setPayment(null);
     setReport(null);
     setError("");
@@ -279,15 +297,15 @@ export function PersonalityDnaExperience() {
         </div>
       ) : null}
 
-      {stage === "preview" && session ? (
+      {stage === "preview" && preview ? (
         <div className="result-preview-card">
           <p className="eyebrow"><SparklesIcon /> Your free preview</p>
-          <h1>{session.preview.profile.title}</h1>
-          <p className="result-subtitle">{session.preview.profile.subtitle}</p>
-          <p>{session.preview.profile.summary}</p>
+          <h1>{preview.profile.title}</h1>
+          <p className="result-subtitle">{preview.profile.subtitle}</p>
+          <p>{preview.profile.summary}</p>
 
           <div className="preview-dimensions">
-            {session.preview.dimensions.map((item) => (
+            {preview.dimensions.map((item) => (
               <div key={item.id}>
                 <span>{item.label}</span>
                 <strong>{item.score}%</strong>
@@ -304,9 +322,11 @@ export function PersonalityDnaExperience() {
             </div>
           </div>
 
+          {error ? <p className="checkout-message">{error} You can retry below.</p> : null}
+
           <div className="result-actions">
-            <button type="button" className="button button-primary" onClick={() => setStage("checkout")}>
-              Unlock premium report <ArrowRightIcon />
+            <button type="button" className="button button-primary" onClick={() => void openCheckout()}>
+              Unlock full report · ₹149 <ArrowRightIcon />
             </button>
             <button type="button" className="button button-secondary" onClick={resetAssessment}>
               Retake assessment

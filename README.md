@@ -150,3 +150,11 @@ Blank affiliate destinations safely open relevant internal guides instead of bro
 6. Verify all eight assessments.
 7. Complete a real low-value payment test and verify approval/unlock.
 8. Submit `https://vibelytix.lol/sitemap.xml` in Search Console.
+
+## 6.0.1 payment-flow hotfix
+
+- Personality DNA preview no longer depends on Supabase session creation.
+- Completing all 16 valid answers immediately opens the free preview.
+- `Unlock full report · ₹149` is always visible on the preview.
+- Secure checkout session creation runs in the background.
+- If session creation fails, the preview remains available and the user receives a retryable checkout message instead of being sent back to the questionnaire.
