@@ -99,7 +99,7 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Explore VibeLytix"
             title="Start with the question that matters now."
-            description="One coherent platform, four practical areas of self-understanding. Personality DNA launches first and becomes the foundation for future recommendations."
+            description="One coherent platform with eight focused assessments across personality, relationships, career, communication, leadership, and personal growth."
           />
           <div className="category-grid">
             {assessmentCategories.map((item) => <CategoryCard item={item} key={item.id} />)}
@@ -148,7 +148,7 @@ export default function HomePage() {
             <SectionHeading
               eyebrow="Example report"
               title="A useful report should explain, not just impress."
-              description="The premium report format is being built around clear evidence, balanced language and actions the user can actually try."
+              description="Each premium report uses balanced language, explainable scoring, and practical actions the user can actually try."
             />
 
             <ul className="feature-list">
@@ -210,7 +210,7 @@ export default function HomePage() {
           <div className="audience-card">
             <p className="eyebrow">For better conversations</p>
             <h2>Turn vague feelings into language you can actually discuss.</h2>
-            <p>Future relationship modules will focus on communication, needs and boundaries—not manipulation or mind reading.</p>
+            <p>Relationship assessments focus on communication, needs, boundaries, and repair—not manipulation or mind reading.</p>
           </div>
         </section>
 
@@ -247,7 +247,7 @@ export default function HomePage() {
         <section className="final-cta shell">
           <div>
             <p className="eyebrow"><ClockIcon /> VibeLytix platform</p>
-            <h2>Four assessments, premium reports and practical learning in one experience.</h2>
+            <h2>Eight assessments, premium reports, and practical learning in one experience.</h2>
             <p>Start free, use the insight carefully and choose only the next step that genuinely fits.</p>
           </div>
           <ButtonLink href="#personality-dna">

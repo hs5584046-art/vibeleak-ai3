@@ -165,3 +165,11 @@ Blank affiliate destinations safely open relevant internal guides instead of bro
 - The UI no longer silently returns to the preview when secure session creation fails.
 - Checkout preparation errors now include retry and back actions.
 - The server logs Supabase error details without exposing secrets to users.
+
+## 6.0.3 global UI and typography hotfix
+
+- Improved sentence spacing and line-height across the full site.
+- Added balanced heading wrapping and readable paragraph wrapping.
+- Fixed cramped buttons, metadata rows, cards and mobile layouts.
+- Fixed footer text concatenation with a semantic separator.
+- Updated stale homepage wording from four to eight assessments.
