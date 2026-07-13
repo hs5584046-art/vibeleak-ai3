@@ -1,0 +1,262 @@
+import { ButtonLink } from "@/components/ui/button-link";
+import {
+  ArrowRightIcon,
+  ArrowUpRightIcon,
+  ChartIcon,
+  CheckIcon,
+  ClockIcon,
+  LockIcon,
+  ShieldIcon,
+  SparklesIcon
+} from "@/components/ui/icons";
+import { SectionHeading } from "@/components/ui/section-heading";
+import { CategoryCard } from "@/components/site/category-card";
+import { FaqList } from "@/components/site/faq-list";
+import { Footer } from "@/components/site/footer";
+import { Header } from "@/components/site/header";
+import { JsonLd } from "@/components/site/json-ld";
+import { ScorePreview } from "@/components/site/score-preview";
+import { assessmentCategories } from "@/lib/site";
+import { learningArticles } from "@/lib/content";
+
+const trustedPrinciples = [
+  {
+    icon: ShieldIcon,
+    title: "Clear boundaries",
+    description: "No diagnosis, mind reading or guaranteed predictions disguised as certainty."
+  },
+  {
+    icon: LockIcon,
+    title: "Privacy by design",
+    description: "Minimal data collection and server-only handling for sensitive credentials."
+  },
+  {
+    icon: ChartIcon,
+    title: "Explainable scoring",
+    description: "Reports will show the themes and answer patterns behind each conclusion."
+  }
+];
+
+export default function HomePage() {
+  return (
+    <>
+      <JsonLd />
+      <Header />
+
+      <main>
+        <section className="hero shell">
+          <div className="hero-copy">
+            <div className="hero-proof">
+              <span><SparklesIcon /> Built for thoughtful self-discovery</span>
+              <span>Production foundation verified</span>
+            </div>
+            <h1>
+              Understand the pattern behind <span className="text-gradient">who you are.</span>
+            </h1>
+            <p>
+              Premium assessments that turn your answers into practical insight across personality,
+              relationships, career and personal growth.
+            </p>
+            <div className="hero-actions">
+              <ButtonLink href="#personality-dna">
+                Explore Personality DNA <ArrowRightIcon />
+              </ButtonLink>
+              <ButtonLink href="#how-it-works" variant="secondary">
+                See how it works
+              </ButtonLink>
+            </div>
+            <div className="hero-trust">
+              <span><CheckIcon /> Free result preview</span>
+              <span><CheckIcon /> No fake certainty</span>
+              <span><CheckIcon /> Private by default</span>
+            </div>
+          </div>
+
+          <div className="hero-visual">
+            <ScorePreview />
+            <div className="floating-note floating-note-one">
+              <span>Emotional depth</span><strong>92%</strong>
+            </div>
+            <div className="floating-note floating-note-two">
+              <span>Best fit</span><strong>Reflective Builder</strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="signal-strip" aria-label="Platform qualities">
+          <div className="shell">
+            {[
+              "Personality insight",
+              "Relationship intelligence",
+              "Career alignment",
+              "Growth systems",
+              "Private reports"
+            ].map((item) => <span key={item}>{item}</span>)}
+          </div>
+        </section>
+
+        <section className="section shell" id="discover">
+          <SectionHeading
+            eyebrow="Explore VibeLytix"
+            title="Start with the question that matters now."
+            description="One coherent platform, four practical areas of self-understanding. Personality DNA launches first and becomes the foundation for future recommendations."
+          />
+          <div className="category-grid">
+            {assessmentCategories.map((item) => <CategoryCard item={item} key={item.id} />)}
+          </div>
+        </section>
+
+        <section className="section section-soft" id="how-it-works">
+          <div className="shell">
+            <SectionHeading
+              eyebrow="How it works"
+              title="Less horoscope. More structured reflection."
+              description="The experience is designed to be useful before, during and after the final score."
+              align="center"
+            />
+
+            <div className="process-grid">
+              {[
+                {
+                  number: "01",
+                  title: "Answer with context",
+                  description: "Questions focus on real choices, habits and reactions rather than vague labels."
+                },
+                {
+                  number: "02",
+                  title: "See your pattern",
+                  description: "Your answers are grouped into understandable traits, needs, tensions and strengths."
+                },
+                {
+                  number: "03",
+                  title: "Use the insight",
+                  description: "The full report translates patterns into practical communication and decision guidance."
+                }
+              ].map((step) => (
+                <article key={step.number}>
+                  <span>{step.number}</span>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section shell report-section">
+          <div className="report-copy">
+            <SectionHeading
+              eyebrow="Example report"
+              title="A useful report should explain, not just impress."
+              description="The premium report format is being built around clear evidence, balanced language and actions the user can actually try."
+            />
+
+            <ul className="feature-list">
+              {[
+                "A concise profile narrative",
+                "Trait and needs breakdown",
+                "Communication and decision patterns",
+                "Strengths without exaggerated praise",
+                "Cautions without fear-based language",
+                "A practical next-step plan"
+              ].map((item) => <li key={item}><CheckIcon /> {item}</li>)}
+            </ul>
+          </div>
+
+          <ScorePreview />
+        </section>
+
+        <section className="section trust-section" id="trust">
+          <div className="shell">
+            <SectionHeading
+              eyebrow="Science, safety & trust"
+              title="Built to earn trust before asking for payment."
+              description="VibeLytix will clearly distinguish assessment insight from clinical advice, and transparent product limits from marketing claims."
+              align="center"
+            />
+
+            <div className="trust-grid">
+              {trustedPrinciples.map(({ icon: Icon, title, description }) => (
+                <article key={title}>
+                  <span><Icon /></span>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </article>
+              ))}
+            </div>
+
+            <div className="trust-callout">
+              <div>
+                <p className="eyebrow"><ShieldIcon /> Product principle</p>
+                <h3>We will never promise “100% accurate” personality insight.</h3>
+              </div>
+              <p>
+                Honest positioning improves user trust and reduces harmful overreliance. The goal is
+                clarity and reflection—not authority over someone’s identity or future.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="section shell audience-section">
+          <div className="audience-card audience-card-primary">
+            <p className="eyebrow">For individuals</p>
+            <h2>Know what energises you, drains you and helps you decide well.</h2>
+            <p>Use the report privately, share selected insights, or return to compare how your patterns evolve.</p>
+            <ButtonLink href="#personality-dna" variant="secondary">
+              Start with Personality DNA <ArrowUpRightIcon />
+            </ButtonLink>
+          </div>
+          <div className="audience-card">
+            <p className="eyebrow">For better conversations</p>
+            <h2>Turn vague feelings into language you can actually discuss.</h2>
+            <p>Future relationship modules will focus on communication, needs and boundaries—not manipulation or mind reading.</p>
+          </div>
+        </section>
+
+
+        <section className="section section-soft" id="learning">
+          <div className="shell">
+            <SectionHeading
+              eyebrow="Learning hub"
+              title="Search-friendly guides with practical depth."
+              description="Assessment pages answer a personal question. These guides answer the broader questions people search before making a decision."
+            />
+            <div className="learning-grid">
+              {learningArticles.map((article) => (
+                <a href={`/learn/${article.slug}`} key={article.slug}>
+                  <span>{article.category}</span>
+                  <h3>{article.title}</h3>
+                  <p>{article.description}</p>
+                  <b>Read guide <ArrowUpRightIcon /></b>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section shell faq-section" id="faq">
+          <SectionHeading
+            eyebrow="Frequently asked questions"
+            title="Useful answers before you begin."
+            description="These principles will remain visible as the assessment and payment modules are added."
+          />
+          <FaqList />
+        </section>
+
+        <section className="final-cta shell">
+          <div>
+            <p className="eyebrow"><ClockIcon /> VibeLytix platform</p>
+            <h2>Four assessments, premium reports and practical learning in one experience.</h2>
+            <p>Start free, use the insight carefully and choose only the next step that genuinely fits.</p>
+          </div>
+          <ButtonLink href="#personality-dna">
+            Start Personality DNA <ArrowRightIcon />
+          </ButtonLink>
+        </section>
+      </main>
+
+      <Footer />
+    </>
+  );
+}
