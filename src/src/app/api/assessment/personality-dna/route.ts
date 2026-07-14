@@ -1,0 +1,69 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
+import { buildPersonalityReport } from "@/lib/assessment/engine";
+import { createOpaqueToken, hashToken } from "@/lib/payments";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+
+const answerValue = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]);
+const payloadSchema = z.object({
+  answers: z.record(z.string(), answerValue)
+});
+
+export async function POST(request: NextRequest) {
+  const parsed = payloadSchema.safeParse(await request.json());
+  if (!parsed.success) return NextResponse.json({ error: "Invalid answers." }, { status: 400 });
+
+  try {
+    const report = buildPersonalityReport(parsed.data.answers);
+    const token = createOpaqueToken();
+    const auth = await createClient();
+    const { data } = await auth.auth.getClaims();
+    const database = createAdminClient();
+
+    const preview = {
+      profile: report.profile,
+      dimensions: report.dimensions.slice(0, 2)
+    };
+
+    const { data: session, error } = await database
+      .from("assessment_sessions")
+      .insert({
+        user_id: data?.claims?.sub ?? null,
+        assessment_id: report.assessmentId,
+        preview,
+        report,
+        access_token_hash: hashToken(token),
+        completed_at: report.completedAt
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      console.error("Personality DNA session creation failed", {
+        code: error.code,
+        message: error.message,
+        details: error.details
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Secure checkout setup failed. Please retry. If it continues, the site owner must run the latest Supabase schema and verify the production Supabase keys."
+        },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json({
+      sessionId: session.id,
+      sessionToken: token,
+      preview
+    }, { status: 201 });
+  } catch (caught) {
+    console.error("Personality DNA assessment processing failed", caught);
+    return NextResponse.json(
+      { error: "A complete valid assessment is required." },
+      { status: 400 }
+    );
+  }
+}
