@@ -286,3 +286,33 @@ alter table public.outreach_messages enable row level security;
 alter table public.autonomous_resources enable row level security;
 -- All writes and admin reads use service-role server routes.
 -- Published resources are exposed only through the server-rendered public route.
+
+create table if not exists public.seo_overrides (
+  path text primary key,
+  title text not null,
+  description text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.seo_overrides enable row level security;
+-- SEO overrides are written by the service-role worker and read server-side only.
+
+create table if not exists public.external_distribution_posts (
+  id bigint generated always as identity primary key,
+  platform text not null check (platform in ('mastodon','bluesky','devto','wordpress')),
+  source_url text not null,
+  external_url text,
+  external_id text,
+  status text not null default 'queued' check (status in ('queued','published','failed','skipped')),
+  error_message text,
+  published_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (platform, source_url)
+);
+
+create index if not exists external_distribution_status_idx
+on public.external_distribution_posts (status, created_at desc);
+
+alter table public.external_distribution_posts enable row level security;
+-- External distribution logs are available only through service-role/admin routes.

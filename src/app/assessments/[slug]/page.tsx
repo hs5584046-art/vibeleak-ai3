@@ -4,6 +4,7 @@ import { ExpansionExperience } from "@/components/assessment/expansion-experienc
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
 import { expansionAssessments, getExpansionAssessment } from "@/lib/assessment/expansion";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export function generateStaticParams() {
   return expansionAssessments.map((assessment) => ({ slug: assessment.id }));
@@ -17,13 +18,21 @@ export async function generateMetadata({
   const { slug } = await params;
   const assessment = getExpansionAssessment(slug);
   if (!assessment) return {};
+  const path = `/assessments/${assessment.id}`;
+  const { data: override } = await createAdminClient()
+    .from("seo_overrides")
+    .select("title,description")
+    .eq("path", path)
+    .maybeSingle();
+  const title = override?.title ?? `${assessment.title} Assessment`;
+  const description = override?.description ?? assessment.description;
   return {
-    title: `${assessment.title} Assessment`,
-    description: assessment.description,
+    title,
+    description,
     alternates: { canonical: `/assessments/${assessment.id}` },
     openGraph: {
-      title: `${assessment.title} | VibeLytix`,
-      description: assessment.description,
+      title,
+      description,
       type: "website"
     }
   };

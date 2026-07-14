@@ -172,19 +172,20 @@ export function buildDailyGrowthPlan(
     },
     {
       channel: "ads",
-      title: `Prepare a controlled ad experiment for ${page.title}`,
-      objective: "Test paid demand with a capped budget and purchase-focused measurement.",
+      title: `Run a zero-spend organic promotion campaign for ${page.title}`,
+      objective: "Distribute the page through free, permissionless web-discovery protocols and relevant editorial outreach.",
       targetUrl: page.url,
-      content: `Ad group draft\n\nHeadline 1: Discover Your ${page.title}\nHeadline 2: Free Personal Preview\nHeadline 3: Detailed Report From ₹79\nDescription 1: Complete a short assessment and see a useful personal preview before deciding whether to unlock more.\nDescription 2: One-time pricing. No subscription. Educational self-reflection, not a diagnosis.\n\nNegative keyword ideas: jobs, salary, free download, PDF answers, clinical diagnosis, medical test.`,
+      content: `Zero-spend campaign copy\n\nHeadline 1: Discover Your ${page.title}\nHeadline 2: Free Personal Preview\nHeadline 3: Detailed Report From ₹79\nDescription 1: Complete a short assessment and see a useful personal preview before deciding whether to unlock more.\nDescription 2: One-time pricing. No subscription. Educational self-reflection, not a diagnosis.\n\nNegative keyword ideas: jobs, salary, free download, PDF answers, clinical diagnosis, medical test.`,
       metadata: {
-        approvalRequired: true,
-        recommendedStart: "Small daily budget with a hard account limit",
+        approvalRequired: false,
+        spend: 0,
+        distribution: ["RSS", "WebSub", "IndexNow", "editorial outreach"],
         conversionEvent: "approved premium report",
         rules: [
-          "Never publish or change spend without owner approval",
-          "Use exact landing-page intent",
-          "Pause after insufficient conversion evidence",
-          "Do not optimise only for clicks"
+          "Use only open protocols or explicitly permitted mechanisms",
+          "Never create fake accounts or bypass moderation",
+          "Do not mass-post comments or forum spam",
+          "Measure referral visits and approved premium reports"
         ]
       },
       status: "draft",

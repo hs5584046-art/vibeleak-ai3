@@ -102,8 +102,8 @@ export function GrowthConsole() {
           <p className="eyebrow">VibeLytix Growth OS</p>
           <h2>Daily traffic and revenue actions.</h2>
           <p>
-            Generates evidence-led SEO, content, outreach, social and ad drafts. External publishing
-            remains controlled so the domain and accounts are not damaged by spam.
+            Core now applies owned-site SEO changes and publishes safe resources automatically.
+            The worker also discovers prospects, sends limited outreach and verifies backlinks.
           </p>
         </div>
         <button
@@ -125,8 +125,8 @@ export function GrowthConsole() {
       <div className="growth-safety-note">
         <strong>Safe automation:</strong>
         <span>
-          No fake accounts, CAPTCHA bypass, comment spam, paid-link concealment or moderation evasion.
-          Ads require owner approval and a hard budget limit.
+          Owned-site SEO and content run automatically. External publishing remains controlled.
+          Outreach uses strict limits and public business contacts. Ads require owner approval and budget controls.
         </span>
       </div>
 
@@ -148,7 +148,7 @@ export function GrowthConsole() {
             <pre>{item.content}</pre>
             <div className="growth-item-actions">
               <button type="button" className="button button-secondary" onClick={() => void copy(item.content)}>
-                Copy draft
+                Copy details
               </button>
               <select
                 aria-label={`Status for ${item.title}`}

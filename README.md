@@ -1,8 +1,23 @@
-# VibeLytix 7.1 — Core + Autonomous Bot Worker
+# VibeLytix 7.3 — Fully Automated Zero-Spend Distribution
 
 # VibeLytix 7.0 — Autonomous Revenue OS
 
 This is the single cumulative VibeLytix master project.
+
+## V7.3 zero-spend distribution upgrade
+
+- Daily Core SEO actions are applied automatically through server-side SEO overrides.
+- Daily Core content actions create and publish a real resource page automatically.
+- New autonomous resources are added to the live sitemap automatically.
+- IndexNow is notified for newly published and SEO-updated URLs.
+- Backlink actions are handed directly to the worker for discovery, limited outreach, follow-up and verification.
+- Manual Approved/Published clicks are no longer required for owned-site SEO and content actions.
+- Every published resource is exposed through a live RSS feed and pushed through the free WebSub hub.
+- New and updated URLs are submitted through IndexNow.
+- Social and ad plan items are automatically converted into zero-spend organic distribution jobs.
+- Editorial backlink discovery, outreach, follow-up and verification remain automated.
+- Account-based networks still require authorised credentials; the worker never creates fake accounts or bypasses moderation.
+
 
 ## Hard file limit
 
@@ -138,3 +153,16 @@ V7 materially expands product value, pricing range, revenue opportunities and re
 
 
 See `BOT-WORKER-PART1.md` for worker setup and verified execution boundaries.
+
+## 7.4 external distribution worker
+
+The daily bot now republishes each newly published VibeLytix resource through official APIs configured by the owner:
+
+- Mastodon public posts
+- Bluesky posts with a clickable canonical link
+- DEV Community canonical cross-posts
+- An owner-controlled WordPress site through the REST API
+
+Each external result is recorded in `external_distribution_posts`, including the external URL, status and any API error. Duplicate successful posts are skipped. Missing credentials simply disable that adapter; they do not fail the worker.
+
+Run the latest `supabase/schema.sql`, then add only the credentials for channels you own and want enabled. These integrations use official APIs and do not create fake accounts, bypass CAPTCHA, or post to third-party forums without authorization.

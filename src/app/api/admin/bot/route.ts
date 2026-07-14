@@ -34,14 +34,15 @@ export async function GET(request: NextRequest) {
   const context = await getAdminContext();
   if (!context) return NextResponse.json({ error: "Admin access is required." }, { status: 403 });
 
-  const [{ data: settings }, { data: runs }, { data: prospects }, { data: resources }] = await Promise.all([
+  const [{ data: settings }, { data: runs }, { data: prospects }, { data: resources }, { data: distribution }] = await Promise.all([
     context.database.from("bot_settings").select("*").eq("id", 1).single(),
     context.database.from("autopilot_runs").select("id,status,summary,started_at,completed_at").eq("run_type", "growth-worker").order("started_at", { ascending: false }).limit(10),
     context.database.from("backlink_prospects").select("id,url,domain,contact_email,relevance_score,status,last_contacted_at,backlink_verified_at").order("created_at", { ascending: false }).limit(50),
-    context.database.from("autonomous_resources").select("id,slug,title,status,published_at").order("created_at", { ascending: false }).limit(20)
+    context.database.from("autonomous_resources").select("id,slug,title,status,published_at").order("created_at", { ascending: false }).limit(20),
+    context.database.from("external_distribution_posts").select("platform,source_url,external_url,status,error_message,published_at").order("created_at", { ascending: false }).limit(50)
   ]);
 
-  return NextResponse.json({ settings, runs: runs ?? [], prospects: prospects ?? [], resources: resources ?? [] }, {
+  return NextResponse.json({ settings, runs: runs ?? [], prospects: prospects ?? [], resources: resources ?? [], distribution: distribution ?? [] }, {
     headers: { "Cache-Control": "no-store, max-age=0" }
   });
 }

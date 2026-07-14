@@ -20,7 +20,10 @@ export const metadata: Metadata = {
     "career strengths",
     "personal growth"
   ],
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    types: { "application/rss+xml": `${env.NEXT_PUBLIC_APP_URL}/feed.xml` }
+  },
   openGraph: {
     type: "website",
     title: "VibeLytix — Understand the pattern behind who you are",

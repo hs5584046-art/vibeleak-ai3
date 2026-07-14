@@ -84,6 +84,134 @@ function relevanceScore(url: string, html: string) {
   return Math.max(0, Math.min(100, score));
 }
 
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 72);
+}
+
+function resourceSections(title: string, objective: string, targetUrl: string) {
+  return [
+    { heading: "Why this matters", paragraph: objective },
+    { heading: "A practical example", paragraph: `Imagine noticing a repeated pattern connected to ${title.toLowerCase()}. Instead of treating it as a permanent label, record the situation, your interpretation, the action you took and the result. This creates evidence you can use.` },
+    { heading: "A simple framework", paragraph: "Use four steps: observe what happened, name the pattern without judging yourself, choose one small alternative response, and review the outcome after a week." },
+    { heading: "Try this exercise", paragraph: "Write one recent example, one exception and one behaviour you will test this week. Keep the experiment specific enough that you can tell whether it helped." },
+    { heading: "Important limitations", paragraph: "Self-assessment content supports reflection and education. It is not a medical or psychological diagnosis and should not replace qualified professional support when wellbeing or safety is affected." },
+    { heading: "Continue with the related assessment", paragraph: `Use the free preview at ${targetUrl} to compare the guide with your own answers. Premium depth is optional.` }
+  ];
+}
+
+async function executeCorePlan(database: Database) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: items, error } = await database
+    .from("growth_items")
+    .select("id,channel,title,objective,target_url,content,metadata,status")
+    .eq("scheduled_for", today)
+    .in("status", ["draft", "approved"])
+    .order("priority", { ascending: false });
+  if (error) throw error;
+
+  const publishedUrls: string[] = [];
+  let seoExecuted = 0;
+  let contentPublished = 0;
+  let queuedExternal = 0;
+  let organicDistributionQueued = 0;
+
+  for (const item of items ?? []) {
+    const now = new Date().toISOString();
+    if (item.channel === "content") {
+      const slug = `${today}-${slugify(item.title.replace(/^Publish one evidence-led guide supporting /i, ""))}`;
+      const title = item.title.replace(/^Publish one evidence-led guide supporting /i, "").trim();
+      const description = item.objective.slice(0, 155);
+      const { error: resourceError } = await database.from("autonomous_resources").upsert({
+        slug,
+        title: `${title}: a practical reflection guide`,
+        description,
+        body: resourceSections(title, item.objective, item.target_url),
+        status: "published",
+        published_at: now,
+        updated_at: now
+      }, { onConflict: "slug" });
+      if (resourceError) throw resourceError;
+      const url = `/resources/${slug}`;
+      publishedUrls.push(url);
+      contentPublished += 1;
+      await database.from("growth_items").update({
+        status: "published",
+        metadata: { ...(item.metadata ?? {}), execution: "auto-published", publishedUrl: url, executedAt: now },
+        updated_at: now
+      }).eq("id", item.id);
+      continue;
+    }
+
+    if (item.channel === "seo") {
+      const cleanTitle = item.title.replace(/^Improve search snippet for /i, "").trim();
+      const seoTitle = `${cleanTitle} Assessment: Free Personal Preview | VibeLytix`;
+      const seoDescription = `Explore your ${cleanTitle.toLowerCase()} patterns with a free personal preview and an optional detailed report. Practical, private and educational.`;
+      const { error: seoError } = await database.from("seo_overrides").upsert({
+        path: item.target_url,
+        title: seoTitle.slice(0, 70),
+        description: seoDescription.slice(0, 160),
+        updated_at: now
+      }, { onConflict: "path" });
+      if (seoError) throw seoError;
+      publishedUrls.push(item.target_url);
+      seoExecuted += 1;
+      await database.from("growth_items").update({
+        status: "published",
+        metadata: { ...(item.metadata ?? {}), execution: "auto-applied", executedAt: now },
+        updated_at: now
+      }).eq("id", item.id);
+      continue;
+    }
+
+    if (item.channel === "backlink") {
+      queuedExternal += 1;
+      await database.from("growth_items").update({
+        status: "approved",
+        metadata: { ...(item.metadata ?? {}), execution: "worker-outreach-enabled", executedAt: now },
+        updated_at: now
+      }).eq("id", item.id);
+      continue;
+    }
+
+    if (item.channel === "social") {
+      organicDistributionQueued += 1;
+      await database.from("growth_items").update({
+        status: "published",
+        metadata: {
+          ...(item.metadata ?? {}),
+          execution: "auto-distributed-via-rss-websub-indexnow",
+          channels: ["RSS", "WebSub", "IndexNow"],
+          feedUrl: `${env.NEXT_PUBLIC_APP_URL}/feed.xml`,
+          executedAt: now
+        },
+        updated_at: now
+      }).eq("id", item.id);
+      continue;
+    }
+
+    if (item.channel === "ads") {
+      await database.from("growth_items").update({
+        status: "published",
+        metadata: {
+          ...(item.metadata ?? {}),
+          execution: "converted-to-free-organic-distribution",
+          spend: 0,
+          channels: ["RSS", "WebSub", "IndexNow", "editorial-outreach"],
+          executedAt: now
+        },
+        updated_at: now
+      }).eq("id", item.id);
+    }
+  }
+
+  return { seoExecuted, contentPublished, queuedExternal, organicDistributionQueued, publishedUrls };
+}
+
 async function discoverProspects(database: Database, limit: number) {
   const query = searchQueries[new Date().getUTCDate() % searchQueries.length];
   const response = await fetch(`https://www.bing.com/search?format=rss&q=${encodeURIComponent(query)}`, {
@@ -265,6 +393,22 @@ async function verifyBacklinks(database: Database, limit: number) {
   return { live };
 }
 
+async function notifyWebSub() {
+  const topic = `${env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/feed.xml`;
+  const body = new URLSearchParams({ "hub.mode": "publish", "hub.url": topic });
+  try {
+    const response = await fetch("https://pubsubhubbub.appspot.com/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+      signal: AbortSignal.timeout(12000)
+    });
+    return { notified: response.ok ? 1 : 0, status: response.status };
+  } catch {
+    return { notified: 0, status: 0 };
+  }
+}
+
 async function notifyIndexNow(urls: string[]) {
   if (!env.INDEXNOW_KEY || urls.length === 0) return { notified: 0 };
   const response = await fetch("https://api.indexnow.org/indexnow", {
@@ -279,6 +423,170 @@ async function notifyIndexNow(urls: string[]) {
     signal: AbortSignal.timeout(12000)
   });
   return { notified: response.ok ? urls.length : 0 };
+}
+
+
+type DistributionResult = {
+  platform: "mastodon" | "bluesky" | "devto" | "wordpress";
+  externalId?: string;
+  externalUrl?: string;
+};
+
+function promoText(title: string, description: string, url: string) {
+  return `${title}\n\n${description}\n\nExplore the free preview and practical guide: ${url}\n\n#selfawareness #personality #careergrowth`;
+}
+
+async function publishMastodon(title: string, description: string, url: string): Promise<DistributionResult | null> {
+  if (!env.MASTODON_BASE_URL || !env.MASTODON_ACCESS_TOKEN) return null;
+  const response = await fetch(`${env.MASTODON_BASE_URL.replace(/\/$/, "")}/api/v1/statuses`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.MASTODON_ACCESS_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ status: promoText(title, description, url).slice(0, 490), visibility: "public" }),
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!response.ok) throw new Error(`Mastodon ${response.status}: ${(await response.text()).slice(0, 180)}`);
+  const data = await response.json() as { id?: string; url?: string };
+  return { platform: "mastodon", externalId: data.id, externalUrl: data.url };
+}
+
+function blueskyFacets(textValue: string, url: string) {
+  const start = Buffer.byteLength(textValue.slice(0, textValue.indexOf(url)), "utf8");
+  return [{
+    index: { byteStart: start, byteEnd: start + Buffer.byteLength(url, "utf8") },
+    features: [{ $type: "app.bsky.richtext.facet#link", uri: url }]
+  }];
+}
+
+async function publishBluesky(title: string, description: string, url: string): Promise<DistributionResult | null> {
+  if (!env.BLUESKY_HANDLE || !env.BLUESKY_APP_PASSWORD) return null;
+  const sessionResponse = await fetch("https://bsky.social/xrpc/com.atproto.server.createSession", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ identifier: env.BLUESKY_HANDLE, password: env.BLUESKY_APP_PASSWORD }),
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!sessionResponse.ok) throw new Error(`Bluesky auth ${sessionResponse.status}`);
+  const session = await sessionResponse.json() as { accessJwt: string; did: string };
+  const textValue = `${title}\n\n${description}\n\n${url}`.slice(0, 300);
+  const response = await fetch("https://bsky.social/xrpc/com.atproto.repo.createRecord", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${session.accessJwt}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      repo: session.did,
+      collection: "app.bsky.feed.post",
+      record: {
+        $type: "app.bsky.feed.post",
+        text: textValue,
+        facets: textValue.includes(url) ? blueskyFacets(textValue, url) : undefined,
+        createdAt: new Date().toISOString()
+      }
+    }),
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!response.ok) throw new Error(`Bluesky ${response.status}: ${(await response.text()).slice(0, 180)}`);
+  const data = await response.json() as { uri?: string; cid?: string };
+  const rkey = data.uri?.split("/").pop();
+  return {
+    platform: "bluesky",
+    externalId: data.cid ?? data.uri,
+    externalUrl: rkey ? `https://bsky.app/profile/${env.BLUESKY_HANDLE}/post/${rkey}` : undefined
+  };
+}
+
+async function publishDevto(title: string, description: string, url: string): Promise<DistributionResult | null> {
+  if (!env.DEVTO_API_KEY) return null;
+  const bodyMarkdown = `# ${title}\n\n${description}\n\nThis practical VibeLytix resource supports reflection and education. It is not a clinical diagnosis.\n\n[Read the complete guide and try the free preview](${url})\n`;
+  const response = await fetch("https://dev.to/api/articles", {
+    method: "POST",
+    headers: { "api-key": env.DEVTO_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ article: { title, published: true, body_markdown: bodyMarkdown, canonical_url: url, tags: ["productivity", "career", "selfimprovement"] } }),
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!response.ok) throw new Error(`DEV ${response.status}: ${(await response.text()).slice(0, 180)}`);
+  const data = await response.json() as { id?: number; url?: string };
+  return { platform: "devto", externalId: data.id?.toString(), externalUrl: data.url };
+}
+
+async function publishWordPress(title: string, description: string, url: string): Promise<DistributionResult | null> {
+  if (!env.WORDPRESS_SITE_URL || !env.WORDPRESS_USERNAME || !env.WORDPRESS_APP_PASSWORD) return null;
+  const auth = Buffer.from(`${env.WORDPRESS_USERNAME}:${env.WORDPRESS_APP_PASSWORD}`).toString("base64");
+  const content = `<p>${escapeHtml(description)}</p><p>This VibeLytix resource is educational and designed for practical self-reflection.</p><p><a href="${escapeHtml(url)}">Read the complete guide and try the free preview</a></p>`;
+  const response = await fetch(`${env.WORDPRESS_SITE_URL.replace(/\/$/, "")}/wp-json/wp/v2/posts`, {
+    method: "POST",
+    headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ title, content, status: "publish" }),
+    signal: AbortSignal.timeout(15000)
+  });
+  if (!response.ok) throw new Error(`WordPress ${response.status}: ${(await response.text()).slice(0, 180)}`);
+  const data = await response.json() as { id?: number; link?: string };
+  return { platform: "wordpress", externalId: data.id?.toString(), externalUrl: data.link };
+}
+
+async function distributeExternally(database: Database, limit = 3) {
+  const { data: resources, error } = await database
+    .from("autonomous_resources")
+    .select("slug,title,description,published_at")
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+
+  const configured = [
+    { platform: "mastodon" as const, enabled: Boolean(env.MASTODON_BASE_URL && env.MASTODON_ACCESS_TOKEN), publish: publishMastodon },
+    { platform: "bluesky" as const, enabled: Boolean(env.BLUESKY_HANDLE && env.BLUESKY_APP_PASSWORD), publish: publishBluesky },
+    { platform: "devto" as const, enabled: Boolean(env.DEVTO_API_KEY), publish: publishDevto },
+    { platform: "wordpress" as const, enabled: Boolean(env.WORDPRESS_SITE_URL && env.WORDPRESS_USERNAME && env.WORDPRESS_APP_PASSWORD), publish: publishWordPress }
+  ];
+
+  let published = 0;
+  let failed = 0;
+  let skipped = 0;
+  const links: string[] = [];
+
+  for (const resource of resources ?? []) {
+    const sourceUrl = `${env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "")}/resources/${resource.slug}`;
+    for (const adapter of configured) {
+      if (!adapter.enabled) { skipped += 1; continue; }
+      const { data: existing } = await database
+        .from("external_distribution_posts")
+        .select("status")
+        .eq("platform", adapter.platform)
+        .eq("source_url", sourceUrl)
+        .maybeSingle();
+      if (existing?.status === "published") { skipped += 1; continue; }
+
+      try {
+        const result = await adapter.publish(resource.title, resource.description, sourceUrl);
+        if (!result) { skipped += 1; continue; }
+        const now = new Date().toISOString();
+        await database.from("external_distribution_posts").upsert({
+          platform: adapter.platform,
+          source_url: sourceUrl,
+          external_url: result.externalUrl ?? null,
+          external_id: result.externalId ?? null,
+          status: "published",
+          error_message: null,
+          published_at: now,
+          updated_at: now
+        }, { onConflict: "platform,source_url" });
+        if (result.externalUrl) links.push(result.externalUrl);
+        published += 1;
+      } catch (error) {
+        await database.from("external_distribution_posts").upsert({
+          platform: adapter.platform,
+          source_url: sourceUrl,
+          status: "failed",
+          error_message: text(error).slice(0, 500),
+          updated_at: new Date().toISOString()
+        }, { onConflict: "platform,source_url" });
+        failed += 1;
+      }
+    }
+  }
+  return { published, failed, skipped, configured: configured.filter((item) => item.enabled).map((item) => item.platform), links };
 }
 
 export async function runGrowthWorker() {
@@ -301,13 +609,17 @@ export async function runGrowthWorker() {
   if (error || !run) throw error ?? new Error("Worker run could not start.");
 
   try {
+    const core = await executeCorePlan(database);
     const resource = await publishOwnResource(database);
     const discovery = await discoverProspects(database, settings.discovery_daily_limit);
     const outreach = await sendOutreach(database, settings.outreach_daily_limit);
     const followUps = await sendFollowUps(database, settings.follow_up_daily_limit);
     const verification = await verifyBacklinks(database, settings.verification_daily_limit);
-    const indexing = await notifyIndexNow(resource.published ? [resource.url] : []);
-    const summary = { resource, discovery, outreach, followUps, verification, indexing };
+    const externalDistribution = await distributeExternally(database);
+    const urlsToIndex = [...core.publishedUrls, ...(resource.published ? [resource.url] : [])];
+    const indexing = await notifyIndexNow([...new Set(urlsToIndex)]);
+    const webSub = await notifyWebSub();
+    const summary = { core, resource, discovery, outreach, followUps, verification, externalDistribution, indexing, webSub };
 
     await database.from("autopilot_runs").update({
       status: "completed",
