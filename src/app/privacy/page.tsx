@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     <LegalLayout
       eyebrow="Legal"
       title="Privacy Policy"
-      introduction="This policy explains the information VibeLytix expects to process as assessment, account and payment features are introduced."
+      introduction="This policy explains how VibeLytix processes assessment, account, support and payment-verification information."
     >
       <h2>1. Information you provide</h2>
       <p>
@@ -35,8 +35,9 @@ export default function PrivacyPage() {
       <h2>4. Service providers</h2>
       <p>
         Hosting, database, authentication, analytics, email and payment providers may process limited
-        information on behalf of VibeLytix. Production vendors and retention periods will be documented
-        before those features launch.
+        information on behalf of VibeLytix. Access is restricted to the services required to operate,
+        secure and support the platform. Retention depends on account, transaction, fraud-prevention
+        and legal requirements.
       </p>
 
       <h2>5. Your choices</h2>

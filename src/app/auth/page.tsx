@@ -12,16 +12,22 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function AuthPage() {
+export default async function AuthPage({
+  searchParams
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const requestedNext = (await searchParams).next;
+  const next = requestedNext === "/admin" ? "/admin" : "/dashboard";
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  if (data?.claims?.sub) redirect("/dashboard");
+  if (data?.claims?.sub) redirect(next);
 
   return (
     <>
       <Header />
       <main className="account-page shell">
-        <AuthForm />
+        <AuthForm next={next} />
       </main>
       <Footer />
     </>

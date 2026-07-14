@@ -19,7 +19,7 @@ export default function ContactPage() {
         <h1>Support should feel as clear as the product.</h1>
         <p>
           Use the email below for product feedback, privacy requests, billing questions or technical support.
-          Payment support workflows will be connected in a later module.
+          For payment support, include the assessment name, account email and transaction reference—never a PIN, OTP or banking password.
         </p>
         <div className="contact-card">
           <span>Support email</span>

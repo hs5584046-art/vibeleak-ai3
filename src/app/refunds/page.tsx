@@ -12,7 +12,7 @@ export default function RefundsPage() {
     <LegalLayout
       eyebrow="Legal"
       title="Refund Policy"
-      introduction="This policy will apply to paid digital reports when the payment module launches."
+      introduction="This policy applies to paid digital assessment reports purchased through VibeLytix."
     >
       <h2>1. Digital reports</h2>
       <p>

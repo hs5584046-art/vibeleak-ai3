@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { ArrowRightIcon, LockIcon, MailIcon } from "@/components/ui/icons";
 
-export function AuthForm() {
+export function AuthForm({ next = "/dashboard" }: { next?: "/dashboard" | "/admin" }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -15,7 +15,7 @@ export function AuthForm() {
     setMessage("");
 
     const supabase = createClient();
-    const redirectTo = `${window.location.origin}/auth/callback?next=/dashboard`;
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {

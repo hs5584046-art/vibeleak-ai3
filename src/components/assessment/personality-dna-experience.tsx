@@ -221,10 +221,14 @@ export function PersonalityDnaExperience() {
   if (!restored) {
     return (
       <section className="assessment-shell">
-        <div className="assessment-loading" aria-label="Loading saved assessment">
-          <span />
-          <p>Restoring your secure progress…</p>
-        </div>
+        <Intro
+          hasReport={false}
+          onStart={() => setStage("questions")}
+          onViewReport={() => setStage("report")}
+        />
+        <p className="restore-note" aria-live="polite">
+          Checking this browser for saved assessment progress…
+        </p>
       </section>
     );
   }

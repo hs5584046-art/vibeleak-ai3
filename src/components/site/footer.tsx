@@ -18,7 +18,7 @@ export function Footer() {
 
       <div className="shell footer-bottom">
         <span>© {new Date().getFullYear()} VibeLytix</span>
-        <span aria-hidden="true" className="footer-separator">•</span>
+        <span aria-hidden="true" className="footer-separator"> • </span>
         <span>Designed for clarity, privacy, and thoughtful decisions.</span>
       </div>
     </footer>

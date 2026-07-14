@@ -33,7 +33,7 @@ const trustedPrinciples = [
   {
     icon: ChartIcon,
     title: "Explainable scoring",
-    description: "Reports will show the themes and answer patterns behind each conclusion."
+    description: "Reports explain the themes and answer patterns behind each conclusion."
   }
 ];
 
@@ -48,7 +48,7 @@ export default function HomePage() {
           <div className="hero-copy">
             <div className="hero-proof">
               <span><SparklesIcon /> Built for thoughtful self-discovery</span>
-              <span>Production foundation verified</span>
+              <span>Eight assessments · One-time premium reports</span>
             </div>
             <h1>
               Understand the pattern behind <span className="text-gradient">who you are.</span>
@@ -252,7 +252,7 @@ export default function HomePage() {
             <SectionHeading
               eyebrow="Science, safety & trust"
               title="Built to earn trust before asking for payment."
-              description="VibeLytix will clearly distinguish assessment insight from clinical advice, and transparent product limits from marketing claims."
+              description="VibeLytix clearly separates educational assessment insight from clinical advice, while keeping product limits and pricing visible."
               align="center"
             />
 
@@ -269,7 +269,7 @@ export default function HomePage() {
             <div className="trust-callout">
               <div>
                 <p className="eyebrow"><ShieldIcon /> Product principle</p>
-                <h3>We will never promise “100% accurate” personality insight.</h3>
+                <h3>We never promise “100% accurate” personality insight.</h3>
               </div>
               <p>
                 Honest positioning improves user trust and reduces harmful overreliance. The goal is
@@ -320,7 +320,7 @@ export default function HomePage() {
           <SectionHeading
             eyebrow="Frequently asked questions"
             title="Useful answers before you begin."
-            description="These principles will remain visible as the assessment and payment modules are added."
+            description="These principles apply across every assessment, premium report and payment experience."
           />
           <FaqList />
         </section>

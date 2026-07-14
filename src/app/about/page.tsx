@@ -6,7 +6,7 @@ import { ShieldIcon, SparklesIcon } from "@/components/ui/icons";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Why VibeLytix is being built and the principles guiding its assessments."
+  description: "Why VibeLytix exists and the principles guiding its assessments."
 };
 
 export default function AboutPage() {
@@ -18,7 +18,7 @@ export default function AboutPage() {
           <p className="eyebrow"><SparklesIcon /> About VibeLytix</p>
           <h1>Self-discovery without fake certainty.</h1>
           <p>
-            VibeLytix is being built as a premium assessment platform that helps people name patterns,
+            VibeLytix is a premium assessment platform that helps people name patterns,
             understand trade-offs and make more deliberate choices.
           </p>
         </section>
@@ -36,8 +36,8 @@ export default function AboutPage() {
               careful language, explainable scoring and practical reports.
             </p>
             <p>
-              The platform will not pretend to diagnose users, read another person’s thoughts or guarantee
-              a future outcome. Instead, it will create structured reflection from the answers a user provides.
+              The platform does not diagnose users, read another person’s thoughts or guarantee
+              a future outcome. Instead, it creates structured reflection from the answers a user provides.
             </p>
           </div>
         </section>
