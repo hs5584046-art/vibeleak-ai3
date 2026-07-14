@@ -29,7 +29,11 @@ const productNames: Record<string, string> = {
   "attachment-style-premium": "Attachment Style",
   "emotional-intelligence-premium": "Emotional Intelligence",
   "communication-style-premium": "Communication Style",
-  "leadership-style-premium": "Leadership Style"
+  "leadership-style-premium": "Leadership Style",
+  "career-accelerator-premium": "Career Accelerator",
+  "personal-life-os-premium": "Personal Life OS",
+  "founder-os-premium": "Founder OS",
+  "couple-compatibility-premium": "Couple Compatibility"
 };
 
 export function AdminPayments() {

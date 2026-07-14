@@ -18,6 +18,7 @@ import { JsonLd } from "@/components/site/json-ld";
 import { ScorePreview } from "@/components/site/score-preview";
 import { assessmentCategories } from "@/lib/site";
 import { learningArticles } from "@/lib/content";
+import { revenueProducts } from "@/lib/products";
 
 const trustedPrinciples = [
   {
@@ -43,7 +44,7 @@ export default function HomePage() {
       <JsonLd />
       <Header />
 
-      <main>
+      <main id="main-content">
         <section className="hero shell">
           <div className="hero-copy">
             <div className="hero-proof">
@@ -106,6 +107,26 @@ export default function HomePage() {
           </div>
         </section>
 
+
+
+        <section className="section shell" id="products">
+          <SectionHeading
+            eyebrow="Personalised outcome products"
+            title="Move from insight to a complete action system."
+            description="Four premium products turn assessment direction and four planning answers into practical career, life, founder and relationship roadmaps."
+          />
+          <div className="product-grid">
+            {revenueProducts.map((product) => (
+              <article key={product.slug} className="product-card">
+                <p className="eyebrow">{product.eyebrow}</p>
+                <h3>{product.title}</h3>
+                <p>{product.description}</p>
+                <ul>{product.features.slice(0, 4).map((feature) => <li key={feature}><CheckIcon /> {feature}</li>)}</ul>
+                <div><strong>₹{product.pricePaise / 100}</strong><ButtonLink href={`/products/${product.slug}`}>Explore <ArrowRightIcon /></ButtonLink></div>
+              </article>
+            ))}
+          </div>
+        </section>
 
         <section className="section shell value-section" id="free-vs-premium">
           <SectionHeading
@@ -222,29 +243,6 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        </section>
-
-        <section className="section shell report-section">
-          <div className="report-copy">
-            <SectionHeading
-              eyebrow="Example report"
-              title="A useful report should explain, not just impress."
-              description="Each premium report uses balanced language, explainable scoring, and practical actions the user can actually try."
-            />
-
-            <ul className="feature-list">
-              {[
-                "A concise profile narrative",
-                "Trait and needs breakdown",
-                "Communication and decision patterns",
-                "Strengths without exaggerated praise",
-                "Cautions without fear-based language",
-                "A practical next-step plan"
-              ].map((item) => <li key={item}><CheckIcon /> {item}</li>)}
-            </ul>
-          </div>
-
-          <ScorePreview />
         </section>
 
         <section className="section trust-section" id="trust">

@@ -105,7 +105,11 @@ export async function POST(request: NextRequest) {
   if (error?.code === "23505") return NextResponse.json({ error: "This UTR has already been submitted." }, { status: 409 });
   if (error) return NextResponse.json({ error: "Payment request could not be created." }, { status: 500 });
 
-  const statusUrl = `${env.NEXT_PUBLIC_APP_URL}/assessments/${product.assessmentId}?payment=${payment.id}&token=${encodeURIComponent(statusToken)}`;
+  const productSlugs = new Set(["career-accelerator", "personal-life-os", "founder-os", "couple-compatibility"]);
+  const statusPath = productSlugs.has(product.assessmentId)
+    ? `/products/${product.assessmentId}`
+    : `/assessments/${product.assessmentId}`;
+  const statusUrl = `${env.NEXT_PUBLIC_APP_URL}${statusPath}?payment=${payment.id}&token=${encodeURIComponent(statusToken)}`;
 
   await Promise.allSettled([
     sendEmail({

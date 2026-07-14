@@ -153,7 +153,36 @@ export function ExpansionExperience({ assessment }: { assessment: ExpansionAsses
     setStage("intro");
   }
 
-  if (!ready) return <div className="assessment-loading"><span /><p>Restoring your progress…</p></div>;
+  if (!ready) {
+    return (
+      <section className="expansion-intro">
+        <div>
+          <p className="eyebrow"><SparklesIcon /> {assessment.eyebrow}</p>
+          <h1>{assessment.title}</h1>
+          <p>{assessment.description}</p>
+          <div className="assessment-facts">
+            <span><ClockIcon /> About {assessment.estimatedMinutes} minutes</span>
+            <span><CheckIcon /> {assessment.questions.length} questions</span>
+            <span><LockIcon /> {assessment.priceLabel}</span>
+          </div>
+          <button type="button" className="button button-primary" disabled aria-disabled="true">
+            Checking saved progress…
+          </button>
+          <p className="restore-note" aria-live="polite">
+            The assessment will be ready in a moment. Your saved progress remains in this browser.
+          </p>
+        </div>
+        <div className="expansion-dimension-list">
+          {assessment.dimensions.map((dimension) => (
+            <article key={dimension.id}>
+              <strong>{dimension.label}</strong>
+              <span>{dimension.description}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   if (stage === "intro") return (
     <section className="expansion-intro">

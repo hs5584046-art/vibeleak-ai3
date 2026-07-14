@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdminPayments } from "@/components/admin/admin-payments";
+import { GrowthConsole } from "@/components/admin/growth-console";
+import { BotConsole } from "@/components/admin/bot-console";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
 import { getAdminAccessState } from "@/lib/admin";
@@ -59,6 +61,8 @@ export default async function AdminPage() {
           <>
             <p className="admin-signed-in">Signed in as {access.user.email}</p>
             <AdminPayments />
+            <GrowthConsole />
+            <BotConsole />
           </>
         ) : null}
       </main>

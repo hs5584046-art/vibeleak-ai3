@@ -167,7 +167,9 @@ export async function PATCH(request: NextRequest) {
   try {
     const token = decryptToken(current.status_token_ciphertext);
     const assessmentId = assessmentIdFromProduct(current.product_id);
-    const statusUrl = `${env.NEXT_PUBLIC_APP_URL}/assessments/${assessmentId}?payment=${parsed.data.id}&token=${encodeURIComponent(token)}`;
+    const productSlugs = new Set(["career-accelerator", "personal-life-os", "founder-os", "couple-compatibility"]);
+    const statusPath = productSlugs.has(assessmentId) ? `/products/${assessmentId}` : `/assessments/${assessmentId}`;
+    const statusUrl = `${env.NEXT_PUBLIC_APP_URL}${statusPath}?payment=${parsed.data.id}&token=${encodeURIComponent(token)}`;
 
     await sendEmail({
       to: current.customer_email,

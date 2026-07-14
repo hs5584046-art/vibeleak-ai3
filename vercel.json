@@ -2,5 +2,15 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "npm ci --no-audit --no-fund",
-  "buildCommand": "npm run typecheck && npm run build"
+  "buildCommand": "npm run typecheck && npm run build",
+  "crons": [
+    {
+      "path": "/api/admin/growth",
+      "schedule": "15 5 * * *"
+    },
+    {
+      "path": "/api/admin/bot",
+      "schedule": "45 5 * * *"
+    }
+  ]
 }

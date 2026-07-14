@@ -39,10 +39,29 @@ export default async function ExpansionAssessmentPage({
   const assessment = getExpansionAssessment(slug);
   if (!assessment) notFound();
 
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: `${assessment.title} Assessment`,
+    description: assessment.description,
+    applicationCategory: "LifestyleApplication",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "INR",
+      price: (assessment.pricePaise / 100).toFixed(0),
+      description: "Optional detailed report. The assessment and personal preview are free."
+    }
+  };
+
   return (
     <>
       <Header />
-      <main className="assessment-page">
+      <main id="main-content" className="assessment-page">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }}
+        />
         <div className="assessment-shell">
           <ExpansionExperience assessment={assessment} />
         </div>

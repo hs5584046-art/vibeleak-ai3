@@ -40,13 +40,34 @@ export default function PrivacyPage() {
         and legal requirements.
       </p>
 
-      <h2>5. Your choices</h2>
+      <h2>5. Typical retention periods</h2>
+      <div className="legal-table-wrap">
+        <table className="legal-table">
+          <thead>
+            <tr><th>Information</th><th>Typical retention</th><th>Reason</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Unfinished answers</td><td>Stored in your browser until cleared</td><td>Restore progress</td></tr>
+            <tr><td>Assessment sessions</td><td>Up to 90 days unless needed for an active purchase</td><td>Preview and secure report delivery</td></tr>
+            <tr><td>Saved account reports</td><td>Until you delete them or close the account</td><td>Report history</td></tr>
+            <tr><td>Payment-verification records</td><td>Up to 7 years where required</td><td>Accounting, disputes and fraud prevention</td></tr>
+            <tr><td>Analytics events</td><td>Up to 13 months</td><td>Reliability and product improvement</td></tr>
+            <tr><td>Support messages</td><td>Up to 24 months after resolution</td><td>Follow-up and dispute history</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Records may be retained longer when required by law, an active dispute, fraud prevention,
+        security investigation or a valid legal request.
+      </p>
+
+      <h2>6. Your choices</h2>
       <p>
         Users may request access, correction or deletion of identifiable information, subject to legitimate
         legal, security and transaction-record obligations.
       </p>
 
-      <h2>6. Contact</h2>
+      <h2>7. Contact</h2>
       <p>Privacy requests may be sent to <a href={`mailto:${env.NEXT_PUBLIC_SUPPORT_EMAIL}`}>{env.NEXT_PUBLIC_SUPPORT_EMAIL}</a>.</p>
     </LegalLayout>
   );

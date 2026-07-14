@@ -17,7 +17,11 @@ export const PRODUCTS: Record<string, Product> = {
   "attachment-style": { id:"attachment-style-premium", assessmentId:"attachment-style", title:"Attachment Style Premium Report", amountPaise:7900, currency:"INR" },
   "emotional-intelligence": { id:"emotional-intelligence-premium", assessmentId:"emotional-intelligence", title:"Emotional Intelligence Premium Report", amountPaise:7900, currency:"INR" },
   "communication-style": { id:"communication-style-premium", assessmentId:"communication-style", title:"Communication Style Premium Report", amountPaise:7900, currency:"INR" },
-  "leadership-style": { id:"leadership-style-premium", assessmentId:"leadership-style", title:"Leadership Style Premium Report", amountPaise:7900, currency:"INR" }
+  "leadership-style": { id:"leadership-style-premium", assessmentId:"leadership-style", title:"Leadership Style Premium Report", amountPaise:7900, currency:"INR" },
+  "career-accelerator": { id:"career-accelerator-premium", assessmentId:"career-accelerator", title:"Career Accelerator", amountPaise:49900, currency:"INR" },
+  "personal-life-os": { id:"personal-life-os-premium", assessmentId:"personal-life-os", title:"Personal Life OS", amountPaise:69900, currency:"INR" },
+  "founder-os": { id:"founder-os-premium", assessmentId:"founder-os", title:"Founder OS", amountPaise:99900, currency:"INR" },
+  "couple-compatibility": { id:"couple-compatibility-premium", assessmentId:"couple-compatibility", title:"Couple Compatibility", amountPaise:59900, currency:"INR" },
 };
 
 export const PRODUCT = PRODUCTS["personality-dna"];

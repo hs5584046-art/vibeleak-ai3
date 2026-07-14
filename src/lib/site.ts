@@ -4,6 +4,7 @@ export const siteConfig = {
   description: "Premium self-discovery assessments for personality, relationships, career, communication, leadership and growth.",
   navigation: [
     { label: "Assessments", href: "/#discover" },
+    { label: "Products", href: "/#products" },
     { label: "How it works", href: "/#how-it-works" },
     { label: "Learning", href: "/#learning" },
     { label: "Trust", href: "/#trust" }
@@ -17,7 +18,11 @@ export const siteConfig = {
       { label: "Emotional Intelligence", href: "/assessments/emotional-intelligence" },
       { label: "Communication Style", href: "/assessments/communication-style" },
       { label: "Leadership Style", href: "/assessments/leadership-style" },
-      { label: "Growth Systems", href: "/assessments/growth-systems" }
+      { label: "Growth Systems", href: "/assessments/growth-systems" },
+      { label: "Career Accelerator", href: "/products/career-accelerator" },
+      { label: "Personal Life OS", href: "/products/personal-life-os" },
+      { label: "Founder OS", href: "/products/founder-os" },
+      { label: "Couple Compatibility", href: "/products/couple-compatibility" }
     ],
     company: [
       { label: "About", href: "/about" },

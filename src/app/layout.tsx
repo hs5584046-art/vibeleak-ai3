@@ -59,7 +59,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+      <body><a className="skip-link" href="#main-content">Skip to main content</a>{children}</body>
     </html>
   );
 }

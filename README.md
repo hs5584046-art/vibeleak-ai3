@@ -1,98 +1,140 @@
-# VibeLytix 6.3 — Complete Payment Administration
+# VibeLytix 7.1 — Core + Autonomous Bot Worker
 
-This is the single cumulative VibeLytix project.
+# VibeLytix 7.0 — Autonomous Revenue OS
 
-## Critical issue fixed
+This is the single cumulative VibeLytix master project.
 
-The manual UPI payment workflow now has a complete, visible administrator experience.
+## Hard file limit
 
-`/admin` explicitly shows one of three states:
+**100 deployable files** — exactly within the requested 100-file limit.
 
-1. Admin sign-in required
-2. Signed-in email is not allowlisted
-3. Full payment administration dashboard
+## Existing platform retained
 
-This removes the previous silent redirect/confusing empty experience.
+- eight free-preview assessments
+- deep premium reports
+- server-side premium report protection
+- GPay/UPI intent and manual UTR verification
+- secure administrator allowlist
+- approve/reject and automatic customer unlock
+- dashboard report saving
+- 60 SEO landing pages
+- 10 detailed learning guides
+- privacy, legal, accessibility and security hardening
+- secure Growth OS dashboard
 
-## Admin dashboard includes
+## Four new revenue products
 
-- pending, approved, rejected and all filters
-- search by name, email, UTR or product
-- customer name and email
-- assessment/product name
-- complete UPI transaction ID / UTR
-- copy UTR button
-- paid amount
-- original amount
-- discount and coupon
-- submitted time
-- session reference
-- reviewed time
-- rejection reason
-- approve-and-unlock action
-- reject-with-reason action
-- confirmation warning before approval
-- loading, success and error states
-- mobile-responsive administration UI
+### Career Accelerator — ₹499
+A personalised career direction, skill-gap and 90-day execution system.
 
-## Approval security
+### Personal Life OS — ₹699
+A unified decision, stress, communication, habit and 90-day personal system.
 
-- administrator authentication required
-- exact email allowlist through `ADMIN_EMAILS`
-- payment can only move from `pending`
-- concurrent/double review is blocked
-- database review metadata is stored
-- coupon redemption increments only on first approval
-- correct assessment-specific status URL is generated
-- status page automatically unlocks after approval
-- email failure does not undo a valid payment review
-- approval must still be matched against real bank or UPI records
+### Founder OS — ₹999
+A founder execution, delegation, leadership and decision-making system.
 
-## Required Vercel setup
+### Couple Compatibility — ₹599
+A two-person communication, conflict, repair and relationship-practice framework.
 
-Set this production environment variable to the exact email used for Supabase sign-in:
+Each product:
 
-```env
-ADMIN_EMAILS=your-real-admin-email@example.com
-```
+- has a public SEO page
+- asks four planning questions
+- creates a secure server-side personalised product session
+- uses the existing GPay/UPI checkout
+- supports coupon pricing
+- enters the same secure admin verification queue
+- unlocks automatically after approval
+- supports a status link from email
+- displays a personalised action system
+- can be saved through browser Print / Save as PDF
 
-Multiple administrators can be comma-separated:
+## Revenue and recommendation layer
 
-```env
-ADMIN_EMAILS=owner@example.com,finance@example.com
-```
+- product cards are visible on the homepage
+- products are included in navigation and sitemap
+- product-specific payment labels appear in admin
+- product status emails return to the correct product page
+- pricing ranges from ₹499 to ₹999
+- existing ₹79–₹149 reports remain available as lower-friction entry products
 
-After changing the variable, redeploy.
+## Daily Growth Autopilot
 
-Then open:
+A Vercel cron runs every day at 05:15 UTC and securely requests:
 
 ```text
-https://vibelytix.lol/admin
+/api/admin/growth
 ```
 
-Sign in through the displayed admin link. The magic link returns to `/admin`.
+When `CRON_SECRET` is configured, it automatically creates the day’s Growth OS plan from first-party funnel events.
 
-## Validation
+Daily plan channels:
 
-- Deployable files: 91
+- SEO
+- content
+- legitimate backlink outreach
+- social distribution
+- controlled ad experiments
+
+The system diagnoses whether the current bottleneck is traffic, completion, preview-to-checkout, checkout or scale.
+
+## Safety and external limitations
+
+V7 automates activity on VibeLytix itself and creates controlled external-distribution workflows.
+
+It does **not**:
+
+- create fake accounts
+- bypass CAPTCHA
+- evade platform moderation
+- mass-post comments or forum spam
+- manufacture guaranteed backlinks
+- publish paid advertising without an authorised account and budget
+- grant itself third-party permission
+
+Real external publishing still requires a permitted mechanism or an account/API that the owner is authorised to use. This is an internet/platform limitation, not a missing Vercel variable.
+
+## Required deployment setup
+
+1. Replace the repository contents with this project.
+2. Run the complete latest `supabase/schema.sql`.
+3. Generate a secret:
+
+```bash
+openssl rand -base64 32
+```
+
+4. Add it in Vercel:
+
+```env
+CRON_SECRET=generated-secret
+```
+
+5. Keep existing Supabase, UPI, email and admin variables.
+6. Deploy without reusing an old build cache.
+7. Verify `/products/career-accelerator`.
+8. Submit one test product UTR and approve it in `/admin`.
+9. Confirm automatic product unlock.
+10. Confirm the next daily Growth OS plan appears automatically.
+
+## Quality results
+
 - ESLint: passed with zero warnings
 - Strict TypeScript: passed
-- Tests: 26/26 passed
-- Admin-flow tests: passed
-- Security tests: passed
+- Tests: 40/40 passed
+- V7 product tests: passed
+- Admin security tests: passed
+- Premium paywall tests: passed
+- Growth Autopilot tests: passed
 - Production build: passed
-- Generated routes: 97/97
+- Generated routes/pages: 102/102
 - Critical production advisories: 0
 - High production advisories: 0
 - Moderate production advisories: 2
 
-## End-to-end verification
+## Honest business note
 
-1. Submit a test UTR as a customer.
-2. Open `/admin`.
-3. Confirm the request appears under Pending.
-4. Match UTR, paid amount and date in your real UPI/bank records.
-5. Select **Approve & unlock**.
-6. Keep the customer status page open.
-7. Confirm the premium report unlocks automatically.
-8. Repeat once with Reject and verify the rejection reason appears.
+V7 materially expands product value, pricing range, revenue opportunities and recurring growth automation. It cannot guarantee traffic, backlinks, rankings or a fixed purchase conversion rate. Those outcomes depend on real users, market demand, external platform rules, distribution quality and continued measurement.
+
+
+See `BOT-WORKER-PART1.md` for worker setup and verified execution boundaries.

@@ -20,7 +20,7 @@ export default function PersonalityDnaPage() {
   return (
     <>
       <Header />
-      <main className="assessment-page">
+      <main id="main-content" className="assessment-page">
         <PersonalityDnaExperience />
       </main>
       <Footer />
