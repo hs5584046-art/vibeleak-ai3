@@ -27,7 +27,12 @@ describe("expanded assessment platform", () => {
       const report = buildExpansionReport(assessment, completeAnswers(assessment.id, 4));
       expect(report.dimensions).toHaveLength(4);
       expect(report.dimensions.every((item) => item.score >= 0 && item.score <= 100)).toBe(true);
-      expect(report.actionPlan).toHaveLength(3);
+      expect(report.actionPlan).toHaveLength(4);
+      expect(report.dimensionInsights).toHaveLength(4);
+      expect(report.realLifeScenarios).toHaveLength(3);
+      expect(report.sevenDayPlan).toHaveLength(7);
+      expect(report.thirtyDayRoadmap).toHaveLength(4);
+      expect(report.stressPattern.length).toBeGreaterThan(80);
     }
   });
 

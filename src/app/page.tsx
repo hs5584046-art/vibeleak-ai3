@@ -106,6 +106,87 @@ export default function HomePage() {
           </div>
         </section>
 
+
+        <section className="section shell value-section" id="free-vs-premium">
+          <SectionHeading
+            eyebrow="Know what you get"
+            title="Start free. Unlock depth only when the preview feels useful."
+            description="Every assessment gives genuine value before payment. Premium reports add the detailed interpretation, scenarios and action systems that make the result practical."
+            align="center"
+          />
+          <div className="value-compare">
+            <article className="value-card">
+              <div className="value-card-head">
+                <span>Free</span>
+                <strong>₹0</strong>
+              </div>
+              <h3>Personal result preview</h3>
+              <ul>
+                {[
+                  "Complete the full assessment",
+                  "Personal profile or result type",
+                  "Short personalised summary",
+                  "Top two dimension scores",
+                  "A clear sense of whether the result fits",
+                  "No card and no subscription"
+                ].map((item) => <li key={item}><CheckIcon /> {item}</li>)}
+              </ul>
+              <ButtonLink href="#discover" variant="secondary">Explore free assessments</ButtonLink>
+            </article>
+            <article className="value-card value-card-premium">
+              <div className="value-card-head">
+                <span>Premium</span>
+                <strong>₹79–₹149</strong>
+              </div>
+              <h3>Deep, personalised report</h3>
+              <ul>
+                {[
+                  "All four score interpretations",
+                  "Strengths, blind spots and overused patterns",
+                  "Behaviour under stress",
+                  "Relationship, work or leadership scenarios",
+                  "7-day practical reset plan",
+                  "30-day growth roadmap",
+                  "Save to account and print as branded PDF",
+                  "One-time payment—no subscription"
+                ].map((item) => <li key={item}><CheckIcon /> {item}</li>)}
+              </ul>
+              <ButtonLink href="#personality-dna">See the flagship assessment <ArrowRightIcon /></ButtonLink>
+            </article>
+          </div>
+        </section>
+
+        <section className="section section-soft life-stage-section">
+          <div className="shell">
+            <SectionHeading
+              eyebrow="Built for different life stages"
+              title="Useful questions change with age, work and responsibility."
+              description="VibeLytix is designed for self-reflection across different stages of life—not as a one-size-fits-all diagnosis."
+              align="center"
+            />
+            <div className="life-stage-grid">
+              {[
+                ["Teenagers & students", "Study preferences, identity, confidence, communication and early career direction."],
+                ["Gen Z", "Relationships, boundaries, emotional intelligence, work fit and growth habits."],
+                ["Working professionals", "Career alignment, communication, stress patterns, leadership and decision-making."],
+                ["Millennials", "Sustainable growth, relationship patterns, career transitions and personal priorities."],
+                ["Older adults", "Reflection, communication, changing roles, strengths and meaningful next chapters."],
+                ["Entrepreneurs & business owners", "Leadership, decision ownership, communication, resilience and work style."]
+              ].map(([title, description]) => (
+                <article key={title}>
+                  <span><SparklesIcon /></span>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </article>
+              ))}
+            </div>
+            <p className="audience-disclaimer">
+              Results are educational reflection tools. They do not replace medical, psychological,
+              career, legal or financial advice.
+            </p>
+          </div>
+        </section>
+
         <section className="section section-soft" id="how-it-works">
           <div className="shell">
             <SectionHeading

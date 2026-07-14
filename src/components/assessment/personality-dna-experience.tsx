@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { personalityDnaAssessment } from "@/lib/assessment/personality-dna";
-import { buildPersonalityReport } from "@/lib/assessment/engine";
 import type {
   AnswerValue,
   AssessmentAnswers,
@@ -187,15 +186,15 @@ export function PersonalityDnaExperience() {
       return;
     }
 
-    const localReport = buildPersonalityReport(nextAnswers);
-    const localPreview: Preview = {
-      profile: localReport.profile,
-      dimensions: localReport.dimensions.slice(0, 2)
-    };
-    setPreview(localPreview);
     window.localStorage.removeItem(PROGRESS_KEY);
-    setStage("preview");
-    void createSecureSession(nextAnswers);
+    setStage("submitting");
+    const secureSession = await createSecureSession(nextAnswers);
+    if (secureSession) {
+      setPreview(secureSession.preview);
+      setStage("preview");
+    } else {
+      setStage("questions");
+    }
   }
 
   async function openCheckout() {
@@ -553,9 +552,44 @@ function FullReport({
         </div>
       </section>
 
-      <section className="report-block">
+      <section className="report-block premium-insight-block">
         <div className="report-block-heading">
           <span>04</span>
+          <div><p className="eyebrow">Pattern interaction</p><h2>How your strongest traits work together</h2></div>
+        </div>
+        <div className="premium-narrative-grid">
+          <div><span>Combination insight</span><p>{report.combinationInsight}</p></div>
+          <div><span>Under stress</span><p>{report.stressPattern}</p></div>
+          <div><span>Relationships</span><p>{report.relationshipInsight}</p></div>
+          <div><span>Work and career</span><p>{report.workInsight}</p></div>
+        </div>
+      </section>
+
+      <section className="report-block">
+        <div className="report-block-heading">
+          <span>05</span>
+          <div><p className="eyebrow">7-day reset</p><h2>One week of practical experiments</h2></div>
+        </div>
+        <div className="timeline-plan">
+          {report.sevenDayPlan.map((item, position) => (
+            <div key={item}><span>{position + 1}</span><p>{item}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <section className="report-block">
+        <div className="report-block-heading">
+          <span>06</span>
+          <div><p className="eyebrow">30-day roadmap</p><h2>Turn insight into repeatable change</h2></div>
+        </div>
+        <div className="roadmap-grid">
+          {report.thirtyDayRoadmap.map((item) => <div key={item}><p>{item}</p></div>)}
+        </div>
+      </section>
+
+      <section className="report-block">
+        <div className="report-block-heading">
+          <span>07</span>
           <div><p className="eyebrow">Action plan</p><h2>Three useful next steps</h2></div>
         </div>
         <div className="report-actions-list">
@@ -569,6 +603,9 @@ function FullReport({
         <p>This report reflects your current answers. Context, stress and life stage can change how traits appear.</p>
         <div>
           <CloudSaveButton report={report} />
+          <button type="button" className="button button-secondary" onClick={() => window.print()}>
+            Download / save PDF
+          </button>
           <button type="button" className="button button-secondary" onClick={onReset}>Retake assessment</button>
           <ButtonLink href="/" variant="secondary">Explore VibeLytix <ArrowRightIcon /></ButtonLink>
         </div>

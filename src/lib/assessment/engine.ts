@@ -147,6 +147,61 @@ function sentenceForDimension(id: DimensionId, score: number, kind: "strength" |
   return copy[id][kind];
 }
 
+function describeStressPattern(scores: Record<DimensionId, number>) {
+  if (scores.depth >= 68 && scores.connection >= 62) {
+    return "Under stress, you may absorb emotional detail, replay conversations and take more responsibility for other people’s reactions than is useful. Your fastest reset is to separate facts, interpretations and responsibilities before responding.";
+  }
+  if (scores.agency >= 68 && scores.adaptability >= 60) {
+    return "Under stress, you may move into action quickly and become impatient with slower processing. Your best reset is to define the actual decision, invite one useful perspective and choose a reversible next step.";
+  }
+  if (scores.connection < 42 && scores.agency >= 58) {
+    return "Under stress, you may become highly self-reliant and communicate less than others need. Your best reset is to state what you are handling, what support would help and when you will reconnect.";
+  }
+  return "Under stress, you may alternate between reflection, reassurance-seeking and delaying action. Your best reset is to name the emotion, define the smallest useful decision and create a clear time boundary for revisiting it.";
+}
+
+function describeCombination(scores: Record<DimensionId, number>) {
+  const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]) as [DimensionId, number][];
+  const key = `${entries[0][0]}:${entries[1][0]}`;
+  const combinations: Record<string, string> = {
+    "depth:agency": "Your combination of reflection and ownership can turn complex feelings into deliberate action. The risk is waiting for perfect internal certainty before using the agency you already have.",
+    "agency:depth": "You combine decisive ownership with meaningful reflection. You are strongest when action follows enough thought—but not endless thought.",
+    "connection:depth": "You notice both emotional nuance and relational impact. This can create unusual empathy, but you need boundaries so understanding does not become over-responsibility.",
+    "depth:connection": "You process experience deeply and care about relational meaning. Clear limits help you use this sensitivity as wisdom rather than emotional overload.",
+    "agency:adaptability": "You are energised by movement, choice and adjustment. This combination supports entrepreneurship and change, but consistency may require deliberate routines.",
+    "adaptability:agency": "You update quickly and prefer forward motion. Your advantage grows when flexibility is tied to a stable priority rather than constant reinvention.",
+    "connection:adaptability": "You read people well and adjust naturally. Your growth edge is maintaining your own position while staying responsive to others.",
+    "adaptability:connection": "You are socially responsive and flexible. The key is distinguishing healthy adaptation from changing yourself to prevent discomfort.",
+    "depth:adaptability": "You combine reflection with openness to change. You often learn quickly from experience when you avoid turning every change into a complete identity review.",
+    "adaptability:depth": "You can update your approach without losing access to deeper meaning. A simple decision rule helps you avoid analysing every available option.",
+    "agency:connection": "You combine personal direction with investment in people. You lead best when directness and emotional context are both visible.",
+    "connection:agency": "You care deeply about connection while retaining personal direction. Your strongest communication names both the relationship and the decision."
+  };
+  return combinations[key] ?? "Your highest two dimensions work together as a balancing system. The strongest results come from using the first dimension for momentum and the second for quality control.";
+}
+
+function relationshipInsight(scores: Record<DimensionId, number>) {
+  if (scores.connection >= 65 && scores.depth >= 58) {
+    return "In close relationships, you are likely to value emotional honesty, reciprocity and meaningful conversation. You may need to ask directly for reassurance or boundaries instead of hoping the other person notices subtle changes.";
+  }
+  if (scores.agency >= 65 && scores.connection < 50) {
+    return "In relationships, autonomy and straightforward communication matter strongly. Others may misread self-sufficiency as distance, so explaining your need for space can protect connection.";
+  }
+  return "In relationships, you are likely to need a mix of clarity, respect and room to process. Your strongest conversations separate what happened, what you felt and what you are asking for next.";
+}
+
+function workInsight(scores: Record<DimensionId, number>) {
+  if (scores.agency >= 65) {
+    return "At work, ownership, visible outcomes and freedom in execution are likely to increase motivation. You may disengage when responsibility is high but decision authority is low.";
+  }
+  if (scores.depth >= 65) {
+    return "At work, depth, meaning and uninterrupted thinking are likely to improve quality. Constant switching or superficial urgency may drain you faster than difficult work itself.";
+  }
+  if (scores.connection >= 65) {
+    return "At work, trust, collaboration and emotionally mature communication are important performance conditions—not optional extras.";
+  }
+  return "At work, a flexible structure with clear priorities is likely to support your best performance. You benefit from knowing what matters without being micromanaged.";
+}
 export function buildPersonalityReport(
   answers: AssessmentAnswers,
   completedAt = new Date().toISOString()
@@ -195,10 +250,32 @@ export function buildPersonalityReport(
           ? "A thoughtful environment with meaningful work, fewer interruptions and space for depth."
           : "A flexible environment that offers structure without rigidity and variety without constant chaos.";
 
+  const stressPattern = describeStressPattern(byId);
+  const relationshipPattern = relationshipInsight(byId);
+  const workPattern = workInsight(byId);
+  const combinationInsight = describeCombination(byId);
+
   const actionPlan = [
     `Use your ${strongestDimension.label.toLowerCase()} as a deliberate strength in one important decision this week.`,
     `Create one small practice that supports your lower ${balancingDimension.label.toLowerCase()} score instead of treating it as a flaw.`,
     "Ask one trusted person which part of this report feels most accurate—and which part they see differently."
+  ];
+
+  const sevenDayPlan = [
+    "Day 1: Write one recent situation where your strongest dimension helped you.",
+    "Day 2: Notice one trigger that activates your stress pattern.",
+    "Day 3: Make one direct request instead of relying on hints or assumptions.",
+    "Day 4: Protect 30 minutes for the environment in which you think best.",
+    `Day 5: Practice one behaviour that supports ${balancingDimension.label.toLowerCase()}.`,
+    "Day 6: Ask for one specific piece of feedback from someone you trust.",
+    "Day 7: Review what changed in behaviour—not only how motivated you felt."
+  ];
+
+  const thirtyDayRoadmap = [
+    "Week 1 — Awareness: track situations that energise, drain or trigger you.",
+    "Week 2 — Communication: practise one clearer request, boundary or decision explanation each day.",
+    "Week 3 — Behaviour design: change one routine or environment cue that repeatedly works against you.",
+    "Week 4 — Integration: choose one relationship, work or growth decision and apply your report deliberately."
   ];
 
   return {
@@ -213,6 +290,12 @@ export function buildPersonalityReport(
     communicationStyle,
     decisionStyle,
     idealEnvironment,
-    actionPlan
+    stressPattern,
+    relationshipInsight: relationshipPattern,
+    workInsight: workPattern,
+    combinationInsight,
+    actionPlan,
+    sevenDayPlan,
+    thirtyDayRoadmap
   };
 }

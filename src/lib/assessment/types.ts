@@ -57,5 +57,11 @@ export type PersonalityReport = {
   communicationStyle: string;
   decisionStyle: string;
   idealEnvironment: string;
+  stressPattern: string;
+  relationshipInsight: string;
+  workInsight: string;
+  combinationInsight: string;
   actionPlan: string[];
+  sevenDayPlan: string[];
+  thirtyDayRoadmap: string[];
 };

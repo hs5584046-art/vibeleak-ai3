@@ -1,183 +1,103 @@
-# VibeLytix 6.0 — Final Monetization & SEO Master
+# VibeLytix 6.2 — Premium Conversion & Security Upgrade
 
-This is the single cumulative VibeLytix project. Do not combine it with previous module ZIPs.
+This is the single cumulative VibeLytix project. Do not merge it with earlier ZIP versions.
 
-## Verified size
+## Verified project size
 
-**89 deployable files** — below the 100-file limit.
+**90 deployable files**, below the 100-file requirement.
 
-Excluded generated folders:
+## Premium value upgrade
 
-- `node_modules`
-- `.next`
-- `coverage`
-- `.git`
+All eight premium reports now include substantially more than the free preview:
 
-## Critical production bug fixed
+- all four dimension scores
+- dimension-by-dimension interpretation
+- strengths and blind spots
+- overused-strength warnings
+- behaviour under stress
+- real-life relationship, work, communication or leadership scenarios
+- practical next actions
+- seven-day reset plan
+- thirty-day roadmap
+- result-based recommendations
+- account saving
+- browser print / Save as PDF support
 
-Personality DNA now checks whether all 16 answers are complete, regardless of the currently visible question index.
+Personality DNA additionally includes:
 
-This fixes the production issue where the interface could show `16 of 16 answered` while remaining on an earlier question and never opening the preview/payment flow.
+- score-combination analysis
+- relationship insight
+- work and career insight
+- communication style
+- decision style
+- ideal environment
 
-## Assessments and pricing
+## Homepage conversion upgrade
 
-Every assessment is free to complete and includes a useful free preview.
+The homepage now clearly shows:
 
-- Personality DNA — ₹149 detailed report
-- Relationship Intelligence — ₹99 detailed report
-- Career Alignment — ₹99 detailed report
-- Growth Systems — ₹99 detailed report
-- Attachment Style — ₹79 detailed report
-- Emotional Intelligence — ₹79 detailed report
-- Communication Style — ₹79 detailed report
-- Leadership Style — ₹79 detailed report
+- what users receive for free
+- what premium unlocks
+- one-time ₹79–₹149 pricing
+- no-subscription messaging
+- use cases for teenagers and students
+- Gen Z
+- working professionals
+- millennials
+- older adults
+- entrepreneurs and business owners
+- educational and non-diagnostic transparency
 
-There is no subscription requirement.
+## Security fix
 
-## Payment experience
+The Personality DNA client component no longer imports or runs the full premium report engine.
 
-- Free preview before purchase
-- Visible report price
-- UPI deep link
-- Coupon support
-- UTR submission
-- Duplicate UTR protection
-- Pending, approved and rejected states
-- Automatic status polling
-- Secure status links
-- Admin verification dashboard
-- Report release only after approval
-- Optional transactional email through Resend
+Full Personality DNA scoring and report generation now remain in the server assessment route. The browser receives only the approved free preview before payment. Dedicated tests verify that the client component does not import `buildPersonalityReport`.
 
-Always verify a submitted UTR against real bank or UPI merchant records before approval.
+The existing unlock controls remain:
 
-## SEO and content
+- server-created assessment session
+- hashed access token
+- payment approval requirement
+- payment status-token verification
+- report release only through `/api/unlock`
+- server-only Supabase secret usage
+- Row-Level Security for user-owned saved reports
 
-- 8 assessment pages
-- 15 search-focused landing pages
-- 10 original educational guides
-- Canonical metadata
-- Dynamic Open Graph metadata
-- FAQ and Article structured data
-- XML sitemap
-- Robots configuration
-- Internal linking
-- Learning hub
-- First-party assessment and affiliate analytics
-- Result-based affiliate recommendations
-- Affiliate disclosure and safe internal fallback links
+No software can be guaranteed permanently “100% secure.” This upgrade fixes the identified client-side paywall bypass and validates the intended server-side unlock path.
 
-Technical SEO cannot guarantee first position, traffic volume or revenue. Search performance also depends on competition, authority, backlinks, content usefulness, engagement and time.
+## PDF reports
 
-## Accounts and reports
+Premium reports include a `Download / save PDF` action. It opens the browser print dialog, where users can select **Save as PDF**. Print-specific styling removes navigation, buttons and affiliate blocks.
 
-- Passwordless Supabase sign-in
-- Protected dashboard
-- All unlocked reports can be saved
-- Report history
-- JSON export
-- Permanent deletion
-- Row-Level Security
-- Local progress restore before sign-in
-
-## Required setup
-
-Run the entire latest SQL file in Supabase:
-
-```text
-supabase/schema.sql
-```
-
-Configure these Supabase authentication redirect URLs:
-
-```text
-http://localhost:3000/auth/callback
-https://vibelytix.lol/auth/callback
-```
-
-## Required Vercel environment variables
-
-```env
-NEXT_PUBLIC_APP_URL=https://vibelytix.lol
-NEXT_PUBLIC_SUPPORT_EMAIL=support@vibelytix.lol
-
-NEXT_PUBLIC_UPI_ID=YOUR_REAL_UPI_ID@bank
-NEXT_PUBLIC_UPI_NAME=VibeLytix
-
-NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=YOUR_SUPABASE_PUBLISHABLE_KEY
-SUPABASE_SECRET_KEY=YOUR_SUPABASE_SECRET_KEY
-
-ADMIN_EMAILS=YOUR_ADMIN_LOGIN_EMAIL
-PAYMENT_TOKEN_SECRET=AT_LEAST_32_RANDOM_CHARACTERS
-PAYMENT_NOTIFICATION_EMAIL=YOUR_ADMIN_EMAIL
-```
-
-Optional:
-
-```env
-RESEND_API_KEY=
-EMAIL_FROM=VibeLytix <reports@vibelytix.lol>
-
-AFFILIATE_RELATIONSHIP_BOOK=
-AFFILIATE_RELATIONSHIP_COURSE=
-AFFILIATE_CAREER_BOOK=
-AFFILIATE_CAREER_COURSE=
-AFFILIATE_GROWTH_BOOK=
-AFFILIATE_GROWTH_COURSE=
-```
-
-Blank affiliate destinations safely open relevant internal guides instead of broken links.
-
-## Verification results
+## Quality results
 
 - ESLint: passed with zero warnings
 - Strict TypeScript: passed
-- Unit tests: 21/21 passed
-- Production compilation: passed
-- Generated routes: 52/52
+- Tests: 23/23 passed
+- Security tests: passed
+- Production build: passed
+- Generated routes: 97/97
 - Critical production advisories: 0
 - High production advisories: 0
 - Moderate production advisories: 2
 
 ## Deployment
 
-1. Replace the GitHub repository contents with this project.
-2. Do not upload generated folders.
-3. Keep `package.json`, `package-lock.json`, `.npmrc` and `vercel.json`.
-4. Add the required Vercel environment variables.
-5. Redeploy without reusing an old build cache.
-6. Verify all eight assessments.
-7. Complete a real low-value payment test and verify approval/unlock.
-8. Submit `https://vibelytix.lol/sitemap.xml` in Search Console.
+1. Replace the current GitHub repository files with this project.
+2. Do not upload `node_modules`, `.next`, `coverage` or `.git`.
+3. Keep the current Vercel environment variables.
+4. Run the latest `supabase/schema.sql` if it has not already been run.
+5. Deploy without reusing an old build cache.
+6. Test one free preview and one approved premium unlock for Personality DNA.
+7. Test one ₹79 and one ₹99 assessment.
+8. Test Save as PDF on mobile and desktop.
+9. Confirm `/admin`, `/dashboard`, `/sitemap.xml` and `/api/health`.
 
-## 6.0.1 payment-flow hotfix
+## Conversion note
 
-- Personality DNA preview no longer depends on Supabase session creation.
-- Completing all 16 valid answers immediately opens the free preview.
-- `Unlock full report · ₹149` is always visible on the preview.
-- Secure checkout session creation runs in the background.
-- If session creation fails, the preview remains available and the user receives a retryable checkout message instead of being sent back to the questionnaire.
+The new design makes premium value clearer and reduces friction, but no design can guarantee a maximum payment percentage. Track the real funnel:
 
-## 6.0.2 checkout-opening hotfix
+`assessment_started → assessment_completed → checkout_started → payment_submitted → approved → unlocked`
 
-- Clicking `Unlock full report · ₹149` opens a visible checkout setup screen immediately.
-- The UI no longer silently returns to the preview when secure session creation fails.
-- Checkout preparation errors now include retry and back actions.
-- The server logs Supabase error details without exposing secrets to users.
-
-## 6.0.3 global UI and typography hotfix
-
-- Improved sentence spacing and line-height across the full site.
-- Added balanced heading wrapping and readable paragraph wrapping.
-- Fixed cramped buttons, metadata rows, cards and mobile layouts.
-- Fixed footer text concatenation with a semantic separator.
-- Updated stale homepage wording from four to eight assessments.
-## 6.1.0 SEO URL expansion
-
-- Expanded search-focused landing pages from 15 to 60.
-- Every page has a unique title, description, intended audience, topic focus, three explanatory sections, four FAQs and a relevant assessment CTA.
-- All landing pages are statically generated and included automatically in `sitemap.xml`.
-- Production build generated 97 routes/pages successfully.
-- This is an SEO foundation, not a ranking guarantee; avoid submitting every URL manually at once. Let the sitemap handle discovery and request indexing only for the highest-priority pages.
-
+Use real data to improve pricing, copy and report value.

@@ -239,9 +239,44 @@ export function ExpansionExperience({ assessment }: { assessment: ExpansionAsses
         <div className="dimension-report-grid">{report.dimensions.map((item) => <div key={item.id}><div><span>{item.label}</span><b>{item.score}%</b></div><i><b style={{width:`${item.score}%`}} /></i><small>{item.description}</small></div>)}</div>
       </section>
       <section className="report-block"><div className="report-two-column"><div><h3>Strengths</h3><ul>{report.strengths.map((item) => <li key={item}><CheckIcon />{item}</li>)}</ul></div><div><h3>Watchouts</h3><ul>{report.watchouts.map((item) => <li key={item}><span>!</span>{item}</li>)}</ul></div></div></section>
-      <section className="report-block"><div className="report-block-heading"><span>02</span><div><p className="eyebrow">Action plan</p><h2>Three practical next steps</h2></div></div><div className="report-actions-list">{report.actionPlan.map((item,position) => <div key={item}><span>{position+1}</span><p>{item}</p></div>)}</div></section>
+      <section className="report-block">
+        <div className="report-block-heading"><span>02</span><div><p className="eyebrow">Deep interpretation</p><h2>What each score may look like in real life</h2></div></div>
+        <div className="premium-narrative-grid">
+          {report.dimensionInsights.map((item) => {
+            const dimension = report.dimensions.find((value) => value.id === item.id);
+            return <div key={item.id}><span>{dimension?.label}</span><p>{item.interpretation}</p><small>{item.growthEdge}</small></div>;
+          })}
+        </div>
+      </section>
+      <section className="report-block">
+        <div className="report-block-heading"><span>03</span><div><p className="eyebrow">Under pressure</p><h2>Your likely stress pattern</h2></div></div>
+        <div className="premium-callout"><p>{report.stressPattern}</p></div>
+      </section>
+      <section className="report-block">
+        <div className="report-block-heading"><span>04</span><div><p className="eyebrow">Real-life application</p><h2>Three situations to use this insight</h2></div></div>
+        <div className="scenario-grid">{report.realLifeScenarios.map((item) => <div key={item.title}><span>{item.title}</span><p>{item.insight}</p></div>)}</div>
+      </section>
+      <section className="report-block">
+        <div className="report-block-heading"><span>05</span><div><p className="eyebrow">Action plan</p><h2>Practical next steps</h2></div></div>
+        <div className="report-actions-list">{report.actionPlan.map((item,position) => <div key={item}><span>{position+1}</span><p>{item}</p></div>)}</div>
+      </section>
+      <section className="report-block">
+        <div className="report-block-heading"><span>06</span><div><p className="eyebrow">7-day reset</p><h2>Build momentum this week</h2></div></div>
+        <div className="timeline-plan">{report.sevenDayPlan.map((item,position) => <div key={item}><span>{position+1}</span><p>{item}</p></div>)}</div>
+      </section>
+      <section className="report-block">
+        <div className="report-block-heading"><span>07</span><div><p className="eyebrow">30-day roadmap</p><h2>Make the result useful beyond today</h2></div></div>
+        <div className="roadmap-grid">{report.thirtyDayRoadmap.map((item) => <div key={item}><p>{item}</p></div>)}</div>
+      </section>
       <AffiliateRecommendations category={report.affiliateCategory} />
-      <div className="full-report-footer"><p>This is an educational self-reflection report, not a diagnosis or guaranteed prediction.</p><div><CloudSaveButton report={report} /><button type="button" className="button button-secondary" onClick={reset}>Retake assessment</button></div></div>
+      <div className="full-report-footer">
+        <p>This is an educational self-reflection report, not a diagnosis or guaranteed prediction.</p>
+        <div>
+          <CloudSaveButton report={report} />
+          <button type="button" className="button button-secondary" onClick={() => window.print()}>Download / save PDF</button>
+          <button type="button" className="button button-secondary" onClick={reset}>Retake assessment</button>
+        </div>
+      </div>
     </article>
   ) : null;
 }

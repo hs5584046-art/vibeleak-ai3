@@ -41,7 +41,12 @@ export type ExpansionReport = {
   dimensions: { id: string; label: string; score: number; description: string }[];
   strengths: string[];
   watchouts: string[];
+  dimensionInsights: { id: string; interpretation: string; growthEdge: string }[];
+  stressPattern: string;
+  realLifeScenarios: { title: string; insight: string }[];
   actionPlan: string[];
+  sevenDayPlan: string[];
+  thirtyDayRoadmap: string[];
   affiliateCategory: ExpansionAssessment["affiliateCategory"];
 };
 
@@ -374,6 +379,82 @@ export function getExpansionAssessment(id: string) {
   return expansionAssessments.find((assessment) => assessment.id === id);
 }
 
+function band(score: number) {
+  if (score >= 70) return "high";
+  if (score < 42) return "developing";
+  return "balanced";
+}
+
+function dimensionInterpretation(label: string, description: string, score: number) {
+  const level = band(score);
+  if (level === "high") {
+    return `${label} is a visible strength in your current answers. ${description} You are likely to use this pattern naturally, especially when you feel safe and clear about the situation.`;
+  }
+  if (level === "developing") {
+    return `${label} is currently less automatic for you. ${description} This does not mean inability; it suggests the skill may require more deliberate structure, practice or reassurance.`;
+  }
+  return `${label} appears balanced rather than extreme. ${description} You can often use this capacity when the context supports it, without relying on it in every situation.`;
+}
+
+function growthEdge(label: string, score: number) {
+  if (score >= 70) return `Use ${label.toLowerCase()} deliberately, but notice when a strength becomes overused or rigid.`;
+  if (score < 42) return `Choose one small, repeatable behaviour that makes ${label.toLowerCase()} easier under pressure.`;
+  return `Identify the situations where ${label.toLowerCase()} is strongest and recreate those conditions intentionally.`;
+}
+
+function stressCopy(assessment: ExpansionAssessment, strongest: string, weakest: string) {
+  const map: Record<ExpansionAssessment["id"], string> = {
+    "relationship-intelligence": `Under relational stress, your ${strongest.toLowerCase()} pattern may become overused while ${weakest.toLowerCase()} becomes harder to access. Pause before messaging, separate facts from fears and make one direct request.`,
+    "career-alignment": `Under work stress, you may chase the condition represented by ${strongest.toLowerCase()} while neglecting ${weakest.toLowerCase()}. Recheck priorities, decision authority and energy before making a major move.`,
+    "growth-systems": `Under stress, your strongest growth skill may continue working while ${weakest.toLowerCase()} collapses first. Build a minimum version of the habit that survives low-energy days.`,
+    "attachment-style": `Under attachment stress, protective strategies can become louder than your actual need. Name whether you need reassurance, time, clarity or a boundary before acting.`,
+    "emotional-intelligence": `Under emotional pressure, recognition and regulation can separate. Slow the sequence: notice the feeling, name the need, then choose the response.`,
+    "communication-style": `Under communication stress, your usual style may become sharper, quieter or less flexible. State the observable issue, the impact and one specific request.`,
+    "leadership-style": `Under leadership stress, strengths can become control, avoidance or rushed decisions. Clarify the decision, invite the right input and communicate ownership.`
+  };
+  return map[assessment.id];
+}
+
+function scenarios(assessment: ExpansionAssessment, strongest: string, weakest: string) {
+  const maps: Record<ExpansionAssessment["id"], { title: string; insight: string }[]> = {
+    "relationship-intelligence": [
+      { title: "During conflict", insight: `Lead with ${strongest.toLowerCase()}, then deliberately protect ${weakest.toLowerCase()} before trying to resolve the issue.` },
+      { title: "When needs differ", insight: "Describe the need and boundary without treating disagreement as rejection." },
+      { title: "After disconnection", insight: "Repair requires acknowledgement, a changed behaviour and enough time for trust to update." }
+    ],
+    "career-alignment": [
+      { title: "Evaluating a job", insight: `Score the role on ${strongest.toLowerCase()} and ${weakest.toLowerCase()}, not only salary or title.` },
+      { title: "Feeling stuck", insight: "Separate a role problem, manager problem, skill gap and energy problem before resigning." },
+      { title: "Choosing growth", insight: "Prefer an experiment that creates evidence over a dramatic decision based only on frustration." }
+    ],
+    "growth-systems": [
+      { title: "After a missed week", insight: "Restart with the minimum action and remove the friction that caused the break." },
+      { title: "When motivation drops", insight: `Use ${strongest.toLowerCase()} to support ${weakest.toLowerCase()} instead of waiting to feel ready.` },
+      { title: "Building consistency", insight: "Measure returns and repetitions, not a perfect streak." }
+    ],
+    "attachment-style": [
+      { title: "A delayed response", insight: "Pause before converting uncertainty into a story about rejection or loss of interest." },
+      { title: "Needing space", insight: "Explain what space means, how long you need and when you will reconnect." },
+      { title: "Asking for reassurance", insight: "A direct request is healthier than testing, chasing or withdrawing." }
+    ],
+    "emotional-intelligence": [
+      { title: "Strong anger", insight: "Identify the boundary, disappointment or fear underneath the intensity." },
+      { title: "Another person is upset", insight: "Check your interpretation before assuming you understand the cause." },
+      { title: "A difficult conversation", insight: "Name impact and need without using emotion as proof that your interpretation is correct." }
+    ],
+    "communication-style": [
+      { title: "Giving feedback", insight: "Use one observable example, explain impact and agree on the next behaviour." },
+      { title: "Setting a boundary", insight: "Be clear enough to be understood and calm enough to be heard." },
+      { title: "Being misunderstood", insight: "Check meaning before repeating the same message with more intensity." }
+    ],
+    "leadership-style": [
+      { title: "A team misses the target", insight: "Separate unclear direction, capability, capacity and accountability before reacting." },
+      { title: "A fast decision", insight: `Use ${strongest.toLowerCase()} without excluding the input needed to protect ${weakest.toLowerCase()}.` },
+      { title: "Giving ownership", insight: "Define outcome, constraints and review points—then avoid taking the work back." }
+    ]
+  };
+  return maps[assessment.id];
+}
 export function buildExpansionReport(
   assessment: ExpansionAssessment,
   answers: ExpansionAnswers,
@@ -419,18 +500,43 @@ export function buildExpansionReport(
     summary: profile.summary,
     dimensions,
     strengths: [
-      `${strongest.label} is currently your clearest advantage.`,
-      `Your ${ordered[1].label.toLowerCase()} score gives your strongest trait useful balance.`,
-      `You are more likely to improve when you work with your natural pattern instead of copying someone else’s system.`
+      `${strongest.label} is currently your clearest advantage and is likely to appear naturally when the context feels safe.`,
+      `${ordered[1].label} gives your strongest pattern useful balance and prevents it from becoming one-dimensional.`,
+      `Your current pattern suggests that improvement will be faster when you build on existing strengths instead of copying a system designed for someone else.`,
+      `You have a clear starting point: use ${strongest.label.toLowerCase()} deliberately in one real situation rather than treating the result as an abstract label.`
     ],
     watchouts: [
-      `${weakest.label} may become the limiting factor when pressure is high.`,
-      "A score describes your current answers, not a permanent identity or guaranteed outcome."
+      `${weakest.label} may become the limiting factor when pressure is high or support is unclear.`,
+      `Your strongest dimension can become overused; a strength without context can turn into rigidity, avoidance or over-responsibility.`,
+      "A score describes your current answers, not a permanent identity, diagnosis or guaranteed outcome."
     ],
+    dimensionInsights: dimensions.map((item) => ({
+      id: item.id,
+      interpretation: dimensionInterpretation(item.label, item.description, item.score),
+      growthEdge: growthEdge(item.label, item.score)
+    })),
+    stressPattern: stressCopy(assessment, strongest.label, weakest.label),
+    realLifeScenarios: scenarios(assessment, strongest.label, weakest.label),
     actionPlan: [
       `Use one existing ${strongest.label.toLowerCase()} strength in a real decision this week.`,
       `Choose one small behaviour that strengthens ${weakest.label.toLowerCase()}.`,
+      `Ask one trusted person where they see your ${strongest.label.toLowerCase()} helping—and where it becomes overused.`,
       "Repeat the assessment after four to six weeks and compare behaviour, not only scores."
+    ],
+    sevenDayPlan: [
+      "Day 1: Write one recent situation that reflects your strongest dimension.",
+      "Day 2: Notice one trigger connected to your weakest dimension.",
+      "Day 3: Practise one direct request, boundary or decision statement.",
+      "Day 4: Change one environmental cue that makes the desired behaviour easier.",
+      "Day 5: Use the report in one real conversation or work decision.",
+      "Day 6: Ask for one specific piece of feedback.",
+      "Day 7: Review behaviour, friction and progress without judging your identity."
+    ],
+    thirtyDayRoadmap: [
+      "Week 1 — Observe: track triggers, strengths and repeated situations.",
+      "Week 2 — Practise: repeat one small skill linked to the lowest score.",
+      "Week 3 — Apply: use the insight in a real relationship, career or growth decision.",
+      "Week 4 — Integrate: review evidence, adjust the plan and choose the next measurable behaviour."
     ],
     affiliateCategory: assessment.affiliateCategory
   };
