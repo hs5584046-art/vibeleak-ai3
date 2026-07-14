@@ -2572,3 +2572,35 @@ input, textarea, select {
     padding-inline: 1rem;
   }
 }
+
+/* SEO expansion — richer intent-specific landing content */
+.seo-content-sections {
+  margin: 4rem 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.seo-content-sections article {
+  padding: clamp(1.2rem, 3vw, 1.7rem);
+  border: 1px solid var(--surface-border);
+  border-radius: 1.2rem;
+  background: var(--surface);
+}
+
+.seo-content-sections h2 {
+  margin: 0 0 .75rem;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  letter-spacing: -.035em;
+}
+
+.seo-content-sections p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+@media (max-width: 820px) {
+  .seo-content-sections { grid-template-columns: 1fr; }
+}

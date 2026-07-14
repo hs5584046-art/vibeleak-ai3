@@ -50,6 +50,14 @@ export default async function SeoLandingPage({ params }: { params:Promise<{slug:
       <section className="seo-benefits">
         {page.benefits.map((benefit) => <article key={benefit}><CheckIcon /><p>{benefit}</p></article>)}
       </section>
+      <section className="seo-content-sections">
+        {page.sections.map((section) => (
+          <article key={section.title}>
+            <h2>{section.title}</h2>
+            <p>{section.body}</p>
+          </article>
+        ))}
+      </section>
       <section className="seo-explainer">
         <div>
           <p className="eyebrow"><ShieldIcon /> Transparent by design</p>

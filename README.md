@@ -173,3 +173,11 @@ Blank affiliate destinations safely open relevant internal guides instead of bro
 - Fixed cramped buttons, metadata rows, cards and mobile layouts.
 - Fixed footer text concatenation with a semantic separator.
 - Updated stale homepage wording from four to eight assessments.
+## 6.1.0 SEO URL expansion
+
+- Expanded search-focused landing pages from 15 to 60.
+- Every page has a unique title, description, intended audience, topic focus, three explanatory sections, four FAQs and a relevant assessment CTA.
+- All landing pages are statically generated and included automatically in `sitemap.xml`.
+- Production build generated 97 routes/pages successfully.
+- This is an SEO foundation, not a ranking guarantee; avoid submitting every URL manually at once. Let the sitemap handle discovery and request indexing only for the highest-priority pages.
+
