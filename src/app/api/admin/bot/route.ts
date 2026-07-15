@@ -47,21 +47,8 @@ export async function GET(request: NextRequest) {
   });
 }
 
-export async function POST(request: NextRequest) {
-  const context = await getAdminContext();
-  if (!context) return NextResponse.json({ error: "Admin access is required." }, { status: 403 });
-
-  const action = request.nextUrl.searchParams.get("action");
-  if (action === "run") {
-    try {
-      return NextResponse.json(await runGrowthWorker());
-    } catch (error) {
-      console.error("Manual bot run failed", error);
-      return NextResponse.json({ error: "Bot run failed. Check the latest run log." }, { status: 500 });
-    }
-  }
-
-  return NextResponse.json({ error: "Unknown action." }, { status: 400 });
+export async function POST() {
+  return NextResponse.json({ error: "Manual worker execution is disabled. Use the scheduled autonomous pipeline." }, { status: 405 });
 }
 
 export async function PATCH(request: NextRequest) {

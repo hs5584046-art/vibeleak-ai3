@@ -43,7 +43,6 @@ export function BotConsole() {
   const [runs, setRuns] = useState<Run[]>([]);
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
-  const [working, setWorking] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
@@ -67,7 +66,6 @@ export function BotConsole() {
   }, [load]);
 
   async function save(next: Settings) {
-    setWorking("save");
     const response = await fetch("/api/admin/bot", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -81,7 +79,6 @@ export function BotConsole() {
       })
     });
     const data = await response.json();
-    setWorking("");
     if (!response.ok) {
       setError(data.error ?? "Settings could not be saved.");
       return;
@@ -91,19 +88,7 @@ export function BotConsole() {
     window.setTimeout(() => setNotice(""), 2500);
   }
 
-  async function runNow() {
-    setWorking("run");
-    setError("");
-    const response = await fetch("/api/admin/bot?action=run", { method: "POST" });
-    const data = await response.json();
-    setWorking("");
-    if (!response.ok) {
-      setError(data.error ?? "Bot run failed.");
-      return;
-    }
-    setNotice(data.skipped ? `Run skipped: ${data.reason}.` : "Worker completed.");
-    await load();
-  }
+
 
   if (!settings) {
     return <section className="bot-console"><p>Loading bot controls…</p>{error ? <p className="admin-error">{error}</p> : null}</section>;
@@ -116,16 +101,13 @@ export function BotConsole() {
     <section className="bot-console">
       <div className="growth-heading">
         <div>
-          <p className="eyebrow">V7 Bot Worker</p>
+          <p className="eyebrow">V7.5 Autonomous Worker</p>
           <h2>Autonomous organic operations.</h2>
           <p>
-            Publishes useful VibeLytix resources, discovers relevant public opportunities, sends limited outreach,
-            follows up twice at most, verifies backlinks and records every run.
+            Runs from one scheduled pipeline: plan generation, owned-site publishing, external distribution, outreach, follow-ups, backlink verification and run logging.
           </p>
         </div>
-        <button type="button" className="button button-primary" disabled={working === "run"} onClick={() => void runNow()}>
-          {working === "run" ? "Running…" : "Run worker now"}
-        </button>
+        <span className="growth-status status-published">Scheduled automatically</span>
       </div>
 
       <div className="bot-control-grid">

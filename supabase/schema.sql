@@ -177,7 +177,7 @@ create table if not exists public.growth_items (
   target_url text not null,
   content text not null,
   metadata jsonb not null default '{}'::jsonb,
-  status text not null default 'draft' check (status in ('draft', 'approved', 'published', 'rejected')),
+  status text not null default 'draft' check (status in ('draft', 'approved', 'processing', 'published', 'blocked', 'failed', 'rejected')),
   priority integer not null default 50 check (priority between 0 and 100),
   scheduled_for date not null default current_date,
   created_by uuid references auth.users(id) on delete set null,
@@ -186,6 +186,15 @@ create table if not exists public.growth_items (
   updated_at timestamptz not null default now()
 );
 
+
+-- V7.6: broaden growth execution states for truthful autonomous monitoring.
+do $$
+begin
+  alter table public.growth_items drop constraint if exists growth_items_status_check;
+  alter table public.growth_items add constraint growth_items_status_check
+    check (status in ('draft','approved','processing','published','blocked','failed','rejected'));
+exception when others then null;
+end $$;
 create index if not exists growth_items_schedule_priority_idx
 on public.growth_items (scheduled_for desc, priority desc);
 
@@ -222,7 +231,7 @@ using ((select auth.uid()) = owner_user_id);
 -- Writes use server-side service-role routes only.
 create table if not exists public.bot_settings (
   id integer primary key default 1 check (id = 1),
-  enabled boolean not null default false,
+  enabled boolean not null default true,
   kill_switch boolean not null default false,
   discovery_daily_limit integer not null default 12 check (discovery_daily_limit between 0 and 50),
   outreach_daily_limit integer not null default 5 check (outreach_daily_limit between 0 and 20),
@@ -231,8 +240,8 @@ create table if not exists public.bot_settings (
   updated_at timestamptz not null default now()
 );
 
-insert into public.bot_settings (id) values (1)
-on conflict (id) do nothing;
+insert into public.bot_settings (id, enabled) values (1, true)
+on conflict (id) do update set enabled = true, updated_at = now();
 
 create table if not exists public.backlink_prospects (
   id uuid primary key default gen_random_uuid(),
@@ -305,6 +314,8 @@ create table if not exists public.external_distribution_posts (
   external_id text,
   status text not null default 'queued' check (status in ('queued','published','failed','skipped')),
   error_message text,
+  attempt_count integer not null default 0 check (attempt_count between 0 and 10),
+  next_retry_at timestamptz,
   published_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -316,3 +327,85 @@ on public.external_distribution_posts (status, created_at desc);
 
 alter table public.external_distribution_posts enable row level security;
 -- External distribution logs are available only through service-role/admin routes.
+
+
+-- V7.6 retry columns for existing installations.
+alter table public.external_distribution_posts add column if not exists attempt_count integer not null default 0;
+alter table public.external_distribution_posts add column if not exists next_retry_at timestamptz;
+
+-- V8 Autonomous Growth OS: daily evidence snapshots and durable learning memory.
+create table if not exists public.growth_metrics_daily (
+  id bigint generated always as identity primary key,
+  metric_date date not null,
+  source text not null,
+  metrics jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(metric_date, source)
+);
+create table if not exists public.growth_memory (
+  memory_key text primary key,
+  memory_value jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.growth_metrics_daily enable row level security;
+alter table public.growth_memory enable row level security;
+
+-- V9 constrained production architecture: durable, resumable, idempotent job queue.
+create table if not exists public.growth_jobs (
+  id bigint generated always as identity primary key,
+  job_key text not null unique,
+  job_type text not null check (job_type in ('collect_signals','evaluate_memory','evaluate_experiments','ensure_plan','execute_worker')),
+  status text not null default 'queued' check (status in ('queued','running','completed','dead')),
+  priority integer not null default 50 check (priority between 0 and 100),
+  payload jsonb not null default '{}'::jsonb,
+  result jsonb,
+  attempt_count integer not null default 0 check (attempt_count between 0 and 10),
+  available_at timestamptz not null default now(),
+  locked_at timestamptz,
+  locked_by text,
+  last_error text,
+  completed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists growth_jobs_claim_idx on public.growth_jobs (status, available_at, priority desc, id);
+alter table public.growth_jobs enable row level security;
+
+create or replace function public.claim_growth_jobs(jobs_to_claim integer default 4)
+returns setof public.growth_jobs
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  worker_id text := gen_random_uuid()::text;
+begin
+  return query
+  with candidates as (
+    select id from public.growth_jobs
+    where status = 'queued' and available_at <= now()
+    order by priority desc, id
+    for update skip locked
+    limit greatest(1, least(jobs_to_claim, 10))
+  )
+  update public.growth_jobs j
+  set status = 'running', locked_at = now(), locked_by = worker_id, updated_at = now()
+  from candidates c
+  where j.id = c.id
+  returning j.*;
+end;
+$$;
+revoke all on function public.claim_growth_jobs(integer) from public, anon, authenticated;
+grant execute on function public.claim_growth_jobs(integer) to service_role;
+
+
+-- V10 migration: adaptive experiment evaluation job type.
+do $$
+begin
+  alter table public.growth_jobs drop constraint if exists growth_jobs_job_type_check;
+  alter table public.growth_jobs add constraint growth_jobs_job_type_check
+    check (job_type in ('collect_signals','evaluate_memory','evaluate_experiments','ensure_plan','execute_worker'));
+exception when others then null;
+end $$;

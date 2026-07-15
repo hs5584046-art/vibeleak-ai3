@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
+import { evaluateResourceQuality } from "@/lib/growth";
 import { escapeHtml, sendEmail } from "@/lib/email";
 
 type Database = ReturnType<typeof createAdminClient>;
@@ -95,12 +96,14 @@ function slugify(value: string) {
 
 function resourceSections(title: string, objective: string, targetUrl: string) {
   return [
-    { heading: "Why this matters", paragraph: objective },
-    { heading: "A practical example", paragraph: `Imagine noticing a repeated pattern connected to ${title.toLowerCase()}. Instead of treating it as a permanent label, record the situation, your interpretation, the action you took and the result. This creates evidence you can use.` },
-    { heading: "A simple framework", paragraph: "Use four steps: observe what happened, name the pattern without judging yourself, choose one small alternative response, and review the outcome after a week." },
-    { heading: "Try this exercise", paragraph: "Write one recent example, one exception and one behaviour you will test this week. Keep the experiment specific enough that you can tell whether it helped." },
-    { heading: "Important limitations", paragraph: "Self-assessment content supports reflection and education. It is not a medical or psychological diagnosis and should not replace qualified professional support when wellbeing or safety is affected." },
-    { heading: "Continue with the related assessment", paragraph: `Use the free preview at ${targetUrl} to compare the guide with your own answers. Premium depth is optional.` }
+    { heading: "Why this matters", paragraph: `${objective} Patterns are most useful when treated as working hypotheses rather than permanent labels. This guide focuses on observable behaviour, context and small experiments so readers can learn without turning a reflection tool into a diagnosis.` },
+    { heading: "Start with evidence", paragraph: `Choose one recent situation related to ${title.toLowerCase()}. Record what happened, what you noticed in your body or thoughts, what you did next and what result followed. Separate facts from interpretation so the exercise remains grounded.` },
+    { heading: "A practical example", paragraph: `Imagine noticing a repeated pattern connected to ${title.toLowerCase()}. Instead of deciding that the pattern defines you, compare two or three situations. Look for exceptions, triggers and conditions that changed the outcome. Exceptions often reveal a more useful next step than a label does.` },
+    { heading: "A four-step framework", paragraph: "Use four steps: observe the event without judgement, name the pattern provisionally, choose one small alternative response, and review the outcome after a week. Keep the change small enough to repeat and specific enough to measure." },
+    { heading: "Try this exercise", paragraph: "Write one recent example, one exception and one behaviour you will test this week. Define success in observable terms, such as asking one clarifying question, pausing before replying or completing one planned action. Review what happened rather than grading yourself." },
+    { heading: "How to interpret change", paragraph: "One result is not proof. Look for a pattern across several attempts. Improvement may mean more flexibility, clearer choices or faster recovery rather than a dramatic personality change. Preserve what already works and change only what the evidence supports." },
+    { heading: "Important limitations", paragraph: "Self-assessment content supports reflection and education. It is not a medical or psychological diagnosis and should not replace qualified professional support when wellbeing, safety or daily functioning is affected. Results can also change with context, mood and interpretation." },
+    { heading: "Continue with the related assessment", paragraph: `Use the free preview at ${targetUrl} to compare the guide with your own answers. Treat the result as a starting point, keep premium depth optional and return to the exercise after collecting real-world evidence.` }
   ];
 }
 
@@ -110,7 +113,7 @@ async function executeCorePlan(database: Database) {
     .from("growth_items")
     .select("id,channel,title,objective,target_url,content,metadata,status")
     .eq("scheduled_for", today)
-    .in("status", ["draft", "approved"])
+    .in("status", ["draft", "approved", "failed"])
     .order("priority", { ascending: false });
   if (error) throw error;
 
@@ -119,18 +122,29 @@ async function executeCorePlan(database: Database) {
   let contentPublished = 0;
   let queuedExternal = 0;
   let organicDistributionQueued = 0;
+  const distributionItemIds: string[] = [];
 
   for (const item of items ?? []) {
     const now = new Date().toISOString();
     if (item.channel === "content") {
-      const slug = `${today}-${slugify(item.title.replace(/^Publish one evidence-led guide supporting /i, ""))}`;
-      const title = item.title.replace(/^Publish one evidence-led guide supporting /i, "").trim();
+      const slug = `${today}-${slugify(item.title.replace(/^(?:Publish one evidence-led guide supporting|Publish a supporting guide for) /i, ""))}`;
+      const title = item.title.replace(/^(?:Publish one evidence-led guide supporting|Publish a supporting guide for) /i, "").trim();
       const description = item.objective.slice(0, 155);
+      const body = resourceSections(title, item.objective, item.target_url);
+      const quality = evaluateResourceQuality(`${title}: a practical reflection guide`, description, body);
+      if (!quality.passed) {
+        await database.from("growth_items").update({
+          status: "blocked",
+          metadata: { ...(item.metadata ?? {}), execution: "quality-gate-blocked", quality, executedAt: now },
+          updated_at: now
+        }).eq("id", item.id);
+        continue;
+      }
       const { error: resourceError } = await database.from("autonomous_resources").upsert({
         slug,
         title: `${title}: a practical reflection guide`,
         description,
-        body: resourceSections(title, item.objective, item.target_url),
+        body,
         status: "published",
         published_at: now,
         updated_at: now
@@ -148,7 +162,7 @@ async function executeCorePlan(database: Database) {
     }
 
     if (item.channel === "seo") {
-      const cleanTitle = item.title.replace(/^Improve search snippet for /i, "").trim();
+      const cleanTitle = item.title.replace(/^(?:Improve search snippet for|Evidence-led SEO improvement for) /i, "").trim();
       const seoTitle = `${cleanTitle} Assessment: Free Personal Preview | VibeLytix`;
       const seoDescription = `Explore your ${cleanTitle.toLowerCase()} patterns with a free personal preview and an optional detailed report. Practical, private and educational.`;
       const { error: seoError } = await database.from("seo_overrides").upsert({
@@ -178,30 +192,16 @@ async function executeCorePlan(database: Database) {
       continue;
     }
 
-    if (item.channel === "social") {
+    if (item.channel === "social" || item.channel === "ads") {
       organicDistributionQueued += 1;
+      distributionItemIds.push(item.id);
       await database.from("growth_items").update({
-        status: "published",
+        status: "processing",
         metadata: {
           ...(item.metadata ?? {}),
-          execution: "auto-distributed-via-rss-websub-indexnow",
-          channels: ["RSS", "WebSub", "IndexNow"],
-          feedUrl: `${env.NEXT_PUBLIC_APP_URL}/feed.xml`,
-          executedAt: now
-        },
-        updated_at: now
-      }).eq("id", item.id);
-      continue;
-    }
-
-    if (item.channel === "ads") {
-      await database.from("growth_items").update({
-        status: "published",
-        metadata: {
-          ...(item.metadata ?? {}),
-          execution: "converted-to-free-organic-distribution",
+          execution: "distribution-pending",
           spend: 0,
-          channels: ["RSS", "WebSub", "IndexNow", "editorial-outreach"],
+          feedUrl: `${env.NEXT_PUBLIC_APP_URL}/feed.xml`,
           executedAt: now
         },
         updated_at: now
@@ -209,7 +209,7 @@ async function executeCorePlan(database: Database) {
     }
   }
 
-  return { seoExecuted, contentPublished, queuedExternal, organicDistributionQueued, publishedUrls };
+  return { seoExecuted, contentPublished, queuedExternal, organicDistributionQueued, publishedUrls, distributionItemIds };
 }
 
 async function discoverProspects(database: Database, limit: number) {
@@ -278,6 +278,23 @@ async function publishOwnResource(database: Database) {
   return { published: 1, url: `/resources/${resource.slug}` };
 }
 
+async function currentBacklinkTarget(database: Database) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data } = await database
+    .from("growth_items")
+    .select("target_url,title")
+    .eq("scheduled_for", today)
+    .eq("channel", "backlink")
+    .in("status", ["approved", "processing", "published"])
+    .order("priority", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return {
+    path: data?.target_url || "/assessments/personality-dna",
+    label: data?.title?.replace(/^Earn an editorial mention from /i, "") || "self-assessment"
+  };
+}
+
 async function sendOutreach(database: Database, limit: number) {
   if (!env.RESEND_API_KEY) return { sent: 0, reason: "email_not_configured" };
 
@@ -289,13 +306,15 @@ async function sendOutreach(database: Database, limit: number) {
     .order("relevance_score", { ascending: false })
     .limit(limit);
 
+  const target = await currentBacklinkTarget(database);
+  const targetUrl = `${env.NEXT_PUBLIC_APP_URL}${target.path}`;
   let sent = 0;
   for (const prospect of prospects ?? []) {
     const subject = `Useful self-assessment resource for ${prospect.domain}`;
     const html = `<p>Hello,</p>
 <p>I found your resource while researching practical personality, career and communication tools.</p>
-<p>VibeLytix offers free assessment previews and practical worksheets. This resource may be useful if it genuinely improves your page:</p>
-<p><a href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}/assessments/personality-dna">${escapeHtml(env.NEXT_PUBLIC_APP_URL)}/assessments/personality-dna</a></p>
+<p>VibeLytix offers a free preview and practical reflection material. This resource may be useful if it genuinely improves your page:</p>
+<p><a href="${escapeHtml(targetUrl)}">${escapeHtml(targetUrl)}</a></p>
 <p>No link exchange or payment is requested. Please ignore this message if it is not relevant.</p>
 <p>Regards,<br>VibeLytix</p>`;
 
@@ -323,6 +342,8 @@ async function sendOutreach(database: Database, limit: number) {
 
 async function sendFollowUps(database: Database, limit: number) {
   if (!env.RESEND_API_KEY) return { followUps: 0 };
+  const target = await currentBacklinkTarget(database);
+  const targetUrl = `${env.NEXT_PUBLIC_APP_URL}${target.path}`;
   const cutoff = new Date(Date.now() - 7 * 86400000).toISOString();
   const { data: prospects } = await database
     .from("backlink_prospects")
@@ -339,7 +360,7 @@ async function sendFollowUps(database: Database, limit: number) {
     const subject = `Follow-up: VibeLytix resource for ${prospect.domain}`;
     const html = `<p>Hello,</p>
 <p>A brief follow-up in case the VibeLytix resource is useful for your readers:</p>
-<p><a href="${escapeHtml(env.NEXT_PUBLIC_APP_URL)}/assessments/personality-dna">${escapeHtml(env.NEXT_PUBLIC_APP_URL)}/assessments/personality-dna</a></p>
+<p><a href="${escapeHtml(targetUrl)}">${escapeHtml(targetUrl)}</a></p>
 <p>I will not send another message after the permitted follow-up sequence.</p>
 <p>Regards,<br>VibeLytix</p>`;
     const result = await sendEmail({ to: prospect.contact_email, subject, html });
@@ -552,11 +573,12 @@ async function distributeExternally(database: Database, limit = 3) {
       if (!adapter.enabled) { skipped += 1; continue; }
       const { data: existing } = await database
         .from("external_distribution_posts")
-        .select("status")
+        .select("status,attempt_count,next_retry_at")
         .eq("platform", adapter.platform)
         .eq("source_url", sourceUrl)
         .maybeSingle();
       if (existing?.status === "published") { skipped += 1; continue; }
+      if (existing?.status === "failed" && existing?.attempt_count >= 3 && existing?.next_retry_at && new Date(existing.next_retry_at) > new Date()) { skipped += 1; continue; }
 
       try {
         const result = await adapter.publish(resource.title, resource.description, sourceUrl);
@@ -569,17 +591,23 @@ async function distributeExternally(database: Database, limit = 3) {
           external_id: result.externalId ?? null,
           status: "published",
           error_message: null,
+          attempt_count: 0,
+          next_retry_at: null,
           published_at: now,
           updated_at: now
         }, { onConflict: "platform,source_url" });
         if (result.externalUrl) links.push(result.externalUrl);
         published += 1;
       } catch (error) {
+        const attempts = (existing?.attempt_count ?? 0) + 1;
+        const retryAt = new Date(Date.now() + Math.min(24, 2 ** attempts) * 60 * 60 * 1000).toISOString();
         await database.from("external_distribution_posts").upsert({
           platform: adapter.platform,
           source_url: sourceUrl,
           status: "failed",
           error_message: text(error).slice(0, 500),
+          attempt_count: attempts,
+          next_retry_at: retryAt,
           updated_at: new Date().toISOString()
         }, { onConflict: "platform,source_url" });
         failed += 1;
@@ -591,6 +619,24 @@ async function distributeExternally(database: Database, limit = 3) {
 
 export async function runGrowthWorker() {
   const database = createAdminClient();
+  const staleCutoff = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+  const { data: activeRun } = await database
+    .from("autopilot_runs")
+    .select("id,started_at")
+    .eq("run_type", "growth-worker")
+    .eq("status", "started")
+    .gte("started_at", staleCutoff)
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (activeRun) return { skipped: true, reason: "already_running", runId: activeRun.id };
+
+  await database.from("autopilot_runs").update({
+    status: "failed",
+    summary: { error: "stale_run_recovered" },
+    completed_at: new Date().toISOString()
+  }).eq("run_type", "growth-worker").eq("status", "started").lt("started_at", staleCutoff);
+
   const { data: settings } = await database
     .from("bot_settings")
     .select("*")
@@ -619,6 +665,21 @@ export async function runGrowthWorker() {
     const urlsToIndex = [...core.publishedUrls, ...(resource.published ? [resource.url] : [])];
     const indexing = await notifyIndexNow([...new Set(urlsToIndex)]);
     const webSub = await notifyWebSub();
+    const distributionSucceeded = externalDistribution.published > 0 || indexing.notified > 0 || webSub.notified > 0;
+    if (core.distributionItemIds.length) {
+      await database.from("growth_items").update({
+        status: distributionSucceeded ? "published" : "blocked",
+        metadata: {
+          execution: distributionSucceeded ? "distribution-completed" : "distribution-unavailable",
+          externalPublished: externalDistribution.published,
+          configuredPlatforms: externalDistribution.configured,
+          indexNowNotified: indexing.notified,
+          webSubNotified: webSub.notified,
+          completedAt: new Date().toISOString()
+        },
+        updated_at: new Date().toISOString()
+      }).in("id", core.distributionItemIds);
+    }
     const summary = { core, resource, discovery, outreach, followUps, verification, externalDistribution, indexing, webSub };
 
     await database.from("autopilot_runs").update({

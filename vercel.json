@@ -5,12 +5,8 @@
   "buildCommand": "npm run typecheck && npm run build",
   "crons": [
     {
-      "path": "/api/admin/growth",
+      "path": "/api/cron/autopilot",
       "schedule": "15 5 * * *"
-    },
-    {
-      "path": "/api/admin/bot",
-      "schedule": "45 5 * * *"
     }
   ]
 }

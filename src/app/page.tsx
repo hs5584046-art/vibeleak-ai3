@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import { ButtonLink } from "@/components/ui/button-link";
 import {
   ArrowRightIcon,
@@ -122,7 +123,7 @@ export default function HomePage() {
                 <h3>{product.title}</h3>
                 <p>{product.description}</p>
                 <ul>{product.features.slice(0, 4).map((feature) => <li key={feature}><CheckIcon /> {feature}</li>)}</ul>
-                <div><strong>₹{product.pricePaise / 100}</strong><ButtonLink href={`/products/${product.slug}`}>Explore <ArrowRightIcon /></ButtonLink></div>
+                <div><strong>₹{product.pricePaise / 100}</strong><ButtonLink href={`/products/${product.slug}` as Route}>Explore <ArrowRightIcon /></ButtonLink></div>
               </article>
             ))}
           </div>
