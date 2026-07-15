@@ -356,7 +356,7 @@ alter table public.growth_memory enable row level security;
 create table if not exists public.growth_jobs (
   id bigint generated always as identity primary key,
   job_key text not null unique,
-  job_type text not null check (job_type in ('collect_signals','evaluate_memory','evaluate_experiments','ensure_plan','execute_worker')),
+  job_type text not null check (job_type in ('collect_signals','evaluate_memory','evaluate_experiments','evaluate_agents','ensure_plan','execute_worker')),
   status text not null default 'queued' check (status in ('queued','running','completed','dead')),
   priority integer not null default 50 check (priority between 0 and 100),
   payload jsonb not null default '{}'::jsonb,
@@ -406,6 +406,25 @@ do $$
 begin
   alter table public.growth_jobs drop constraint if exists growth_jobs_job_type_check;
   alter table public.growth_jobs add constraint growth_jobs_job_type_check
-    check (job_type in ('collect_signals','evaluate_memory','evaluate_experiments','ensure_plan','execute_worker'));
+    check (job_type in ('collect_signals','evaluate_memory','evaluate_experiments','evaluate_agents','ensure_plan','execute_worker'));
 exception when others then null;
 end $$;
+
+
+-- V12 Agentic Growth OS: durable daily decisions from the logical agent council.
+create table if not exists public.agent_runs (
+  id bigint generated always as identity primary key,
+  run_date date not null,
+  agent_name text not null,
+  status text not null check (status in ('ready','blocked','watch')),
+  priority integer not null check (priority between 0 and 100),
+  confidence integer not null check (confidence between 0 and 100),
+  objective text not null,
+  actions jsonb not null default '[]'::jsonb,
+  evidence jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(run_date, agent_name)
+);
+create index if not exists agent_runs_date_priority_idx on public.agent_runs (run_date desc, priority desc);
+alter table public.agent_runs enable row level security;

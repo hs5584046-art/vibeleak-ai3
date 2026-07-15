@@ -7,11 +7,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const database = createAdminClient();
   const staleCutoff = new Date(Date.now() - 36 * 60 * 60 * 1000).toISOString();
-  const [{ data: latestRun }, { count: deadJobs }, { count: pendingJobs }, { data: latestMetrics }] = await Promise.all([
+  const [{ data: latestRun }, { count: deadJobs }, { count: pendingJobs }, { data: latestMetrics }, { data: agentRuns }] = await Promise.all([
     database.from("autopilot_runs").select("status,started_at,completed_at,summary").order("started_at", { ascending: false }).limit(1).maybeSingle(),
     database.from("growth_jobs").select("id", { count: "exact", head: true }).eq("status", "dead"),
     database.from("growth_jobs").select("id", { count: "exact", head: true }).in("status", ["queued", "running"]),
-    database.from("growth_metrics_daily").select("metric_date,metrics").eq("source", "pipeline").order("metric_date", { ascending: false }).limit(1).maybeSingle()
+    database.from("growth_metrics_daily").select("metric_date,metrics").eq("source", "pipeline").order("metric_date", { ascending: false }).limit(1).maybeSingle(),
+    database.from("agent_runs").select("agent_name,status,priority,confidence").order("run_date", { ascending: false }).order("priority", { ascending: false }).limit(18)
   ]);
   const stale = !latestRun?.started_at || latestRun.started_at < staleCutoff;
   const integrations = {
@@ -25,8 +26,8 @@ export async function GET() {
   return NextResponse.json({
     ok: healthy,
     service: "vibelytix-web",
-    version: process.env.npm_package_version ?? "10.0.0",
-    automation: { latestRun, pendingJobs: pendingJobs ?? 0, deadJobs: deadJobs ?? 0, stale, latestMetricsDate: latestMetrics?.metric_date ?? null },
+    version: process.env.npm_package_version ?? "12.0.0",
+    automation: { latestRun, pendingJobs: pendingJobs ?? 0, deadJobs: deadJobs ?? 0, stale, latestMetricsDate: latestMetrics?.metric_date ?? null, agents: { total: agentRuns?.length ?? 0, ready: agentRuns?.filter((item) => item.status === "ready").length ?? 0, blocked: agentRuns?.filter((item) => item.status === "blocked").length ?? 0, watch: agentRuns?.filter((item) => item.status === "watch").length ?? 0, decisions: agentRuns ?? [] } },
     integrations,
     timestamp: new Date().toISOString()
   }, { status: healthy ? 200 : 503, headers: { "Cache-Control": "no-store, max-age=0" } });

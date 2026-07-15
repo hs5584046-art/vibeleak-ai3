@@ -1,11 +1,12 @@
 import "server-only";
 import { buildDailyGrowthPlan, dailyJobKey, retryDelayMinutes, type PageSignal } from "@/lib/growth";
 import { runGrowthWorker } from "@/lib/bot-worker";
+import { runAgentCouncil } from "@/lib/agent-os";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 
 type Db = ReturnType<typeof createAdminClient>;
-type JobType = "collect_signals" | "evaluate_memory" | "evaluate_experiments" | "ensure_plan" | "execute_worker";
+type JobType = "collect_signals" | "evaluate_memory" | "evaluate_experiments" | "evaluate_agents" | "ensure_plan" | "execute_worker";
 type ClaimedJob = { id: number; job_type: JobType; payload: Record<string, unknown>; attempt_count: number };
 const day = () => new Date().toISOString().slice(0, 10);
 async function getGoogleAccessToken(preferred?: string) {
@@ -199,7 +200,7 @@ async function ensureDailyGrowthPlan(database: Db) {
 }
 
 async function enqueueDailyJobs(database: Db) {
-  const jobs: JobType[] = ["collect_signals", "evaluate_memory", "evaluate_experiments", "ensure_plan", "execute_worker"];
+  const jobs: JobType[] = ["collect_signals", "evaluate_memory", "evaluate_experiments", "evaluate_agents", "ensure_plan", "execute_worker"];
   const rows = jobs.map((jobType, index) => ({
     job_key: dailyJobKey(day(), jobType), job_type: jobType, status: "queued", priority: 100 - index,
     payload: { date: day() }, available_at: new Date().toISOString(), updated_at: new Date().toISOString()
@@ -240,6 +241,7 @@ async function executeJob(database: Db, job: ClaimedJob) {
   if (job.job_type === "collect_signals") return collectSignals(database);
   if (job.job_type === "evaluate_memory") return evaluatePreviousRuns(database);
   if (job.job_type === "evaluate_experiments") return evaluateExperiments(database);
+  if (job.job_type === "evaluate_agents") return runAgentCouncil();
   if (job.job_type === "ensure_plan") return ensureDailyGrowthPlan(database);
   return runGrowthWorker();
 }
@@ -247,14 +249,14 @@ async function executeJob(database: Db, job: ClaimedJob) {
 export async function runAutonomousPipeline() {
   const database = createAdminClient();
   const { data: run, error } = await database.from("autopilot_runs").insert({
-    run_type: "v10-adaptive-growth-os", status: "started", summary: { stage: "enqueue" }
+    run_type: "v12-agentic-growth-os", status: "started", summary: { stage: "enqueue" }
   }).select("id").single();
   if (error) throw error;
   try {
     await database.from("growth_jobs").update({ status: "queued", locked_at: null, locked_by: null, updated_at: new Date().toISOString() })
       .eq("status", "running").lt("locked_at", new Date(Date.now() - 15 * 60000).toISOString());
     const enqueued = await enqueueDailyJobs(database);
-    const claimed = await claimJobs(database, 5);
+    const claimed = await claimJobs(database, 6);
     const results: Array<{ id: number; type: JobType; ok: boolean; result?: unknown; error?: string }> = [];
     for (let index = 0; index < claimed.length; index += 1) {
       const job = claimed[index];

@@ -25,7 +25,7 @@ export function retryDelayMinutes(attempt: number) {
   return Math.min(720, Math.max(5, 5 * 2 ** Math.max(0, attempt - 1)));
 }
 
-export function dailyJobKey(date: string, type: "collect_signals" | "evaluate_memory" | "evaluate_experiments" | "ensure_plan" | "execute_worker") {
+export function dailyJobKey(date: string, type: "collect_signals" | "evaluate_memory" | "evaluate_experiments" | "evaluate_agents" | "ensure_plan" | "execute_worker") {
   return `${date}:${type}`;
 }
 

@@ -85,3 +85,29 @@ describe("V11 publishing quality and transient recovery", () => {
     expect([200, 400, 401, 403, 404, 422].some(shouldRetryTransientStatus)).toBe(false);
   });
 });
+
+import { vi } from "vitest";
+vi.mock("server-only", () => ({}));
+
+describe("V12 logical agent council", () => {
+  it("creates the complete 18-agent operating team", async () => {
+    const { buildAgentCouncil } = await import("./agent-os");
+    const council = buildAgentCouncil(
+      { counts: { assessment_started: 100, assessment_completed: 40, checkout_started: 4, payment_submitted: 1 }, signals: [{ path: "/assessments/a", title: "A", impressions: 1000, clicks: 10, starts: 100, completions: 40, checkouts: 4, purchases: 1 }] },
+      { searchConsole: true, ga4: true, email: true, indexNow: true, externalPublishing: 0 },
+      { pending: 0, dead: 0, stale: false }
+    );
+    expect(council.decisions).toHaveLength(18);
+    expect(new Set(council.decisions.map((item) => item.agent)).size).toBe(18);
+    expect(council.primaryBottleneck).toBe("completion");
+    expect(council.executionOrder[0]).toBe("analytics");
+  });
+
+  it("reports integrations as blocked instead of pretending they work", async () => {
+    const { buildAgentCouncil } = await import("./agent-os");
+    const council = buildAgentCouncil({ counts: {}, signals: [] }, { searchConsole: false, ga4: false, email: false, indexNow: false, externalPublishing: 0 }, { pending: 0, dead: 0, stale: false });
+    expect(council.decisions.find((item) => item.agent === "analytics")?.status).toBe("blocked");
+    expect(council.decisions.find((item) => item.agent === "outreach")?.status).toBe("blocked");
+    expect(council.decisions.find((item) => item.agent === "distribution")?.status).toBe("blocked");
+  });
+});

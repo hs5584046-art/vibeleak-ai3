@@ -1,31 +1,47 @@
-# VibeLytix v11 Verified Stabilization Build
+# VibeLytix v12 Agentic Autonomous Growth OS
 
-This release strengthens the existing Vercel + Supabase autonomous growth pipeline without claiming control over external outcomes.
+A cumulative GitHub/Vercel/Supabase build kept within the 100-file repository limit.
 
-## Verified engineering changes
+## What changed
 
-- Durable Supabase job queue and atomic claiming remain in place.
-- Evidence-led daily planning remains connected to the worker.
-- Content publishing now has an enforced quality gate covering length, structure, limitations, practical exercise, internal linking and placeholder detection.
-- Outreach follows the current evidence-led backlink target instead of always linking to a fixed assessment.
-- Google OAuth refresh-token configuration is supported for unattended Search Console and GA4 access.
-- Cron duration remains suitable for the existing multi-stage pipeline.
-- Additional automated tests cover content quality and transient HTTP classification.
+- Added a durable 18-agent logical operating council without creating 18 separate services.
+- Added an `evaluate_agents` queue stage between evidence collection and plan generation.
+- Added evidence-based agents for orchestration, analytics, SEO, content strategy, content production, CRO, experiments, prospect discovery, outreach, backlink verification, distribution, affiliate quality, competitor intelligence, memory, reliability, security, reporting and product opportunities.
+- Agent decisions are stored in `agent_runs` and the latest council is stored in `growth_memory`.
+- Missing integrations are marked `blocked`; the system does not fake execution.
+- Existing owned-site publishing, SEO, RSS, WebSub, IndexNow, prospect discovery, public-email outreach, follow-ups and link verification remain connected to the scheduled pipeline.
+- `/api/health` now reports live agent readiness and blocked/watch states.
+
+## Daily pipeline
+
+1. Collect first-party, Search Console and GA4 signals when configured.
+2. Evaluate historical memory.
+3. Evaluate experiments and roll back harmful SEO overrides.
+4. Run the 18-agent council.
+5. Generate the daily evidence-led growth plan.
+6. Execute owned publishing, SEO, distribution, discovery, outreach, follow-ups and verification.
 
 ## Deployment
 
-1. Run the complete `supabase/schema.sql` in Supabase SQL Editor.
-2. Configure all required values from `.env.example` in Vercel.
-3. Deploy the repository and keep the included `vercel.json` cron enabled.
-4. Check `/api/health` after the first scheduled run.
+1. Replace the existing GitHub repository contents with this cumulative build.
+2. Run the complete `supabase/schema.sql` in Supabase SQL Editor.
+3. Keep the included daily Vercel cron enabled.
+4. Configure available environment variables from `.env.example`.
+5. After the first run, inspect `/api/health`, `agent_runs`, `growth_jobs` and `autopilot_runs`.
 
-## Honest boundary
+## Honest boundaries
 
-Owned-site actions can execute automatically after deployment. External publishing requires authorised credentials. Editorial backlinks, search rankings, email inbox placement and purchases remain external outcomes. UPI approval remains manual unless an authorised payment provider/webhook is connected.
+- Search Console, GA4 and authorised external publishing require their initial credentials.
+- Public-email discovery cannot produce an address when a site does not publish one.
+- Editorial backlink acceptance, rankings, inbox placement and purchases remain external outcomes.
+- The logical agents coordinate deterministic evidence-based operations; they are not 18 independent paid LLM processes.
 
-## Verification command
+## Verification
 
 ```bash
 npm ci --no-audit --no-fund
-npm run check
+npm run lint
+npm run typecheck
+npm run test
+npm run build
 ```
