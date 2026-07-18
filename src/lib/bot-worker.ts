@@ -12,7 +12,13 @@ const searchQueries = [
   '"relationship communication" resources newsletter',
   '"leadership assessment" resource page contact',
   '"self improvement tools" directory submit',
-  '"career guidance resources" add resource'
+  '"career guidance resources" add resource',
+  '"personal development" useful links contact',
+  '"self awareness" resources editor',
+  '"workplace communication" resources contact',
+  '"career coaching" recommended tools contact',
+  '"relationship education" useful resources contact',
+  '"leadership development" resource library contact'
 ];
 
 const ownResources = [
@@ -71,6 +77,49 @@ function extractPublicEmail(html: string) {
   if (mailto) return decodeURIComponent(mailto).toLowerCase();
   const visible = html.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i)?.[0];
   return visible?.toLowerCase() ?? null;
+}
+
+function isUsableBusinessEmail(email: string | null) {
+  if (!email) return false;
+  const value = email.toLowerCase();
+  return ![
+    "example.com", "example.org", "sentry.io", "wixpress.com",
+    "wordpress.com", "cloudflare.com", "schema.org"
+  ].some((domain) => value.endsWith(`@${domain}`));
+}
+
+function contactCandidates(pageUrl: string, html: string) {
+  const origin = new URL(pageUrl).origin;
+  const candidates = new Set<string>();
+  for (const match of html.matchAll(/href=["']([^"'#]+)["']/gi)) {
+    try {
+      const url = new URL(match[1], pageUrl);
+      if (url.origin !== origin) continue;
+      if (/\b(contact|about|editor|write-for-us|contribute|advertis)/i.test(`${url.pathname} ${match[1]}`)) {
+        candidates.add(url.toString());
+      }
+    } catch {}
+  }
+  for (const path of ["/contact", "/about", "/contact-us"]) candidates.add(`${origin}${path}`);
+  return [...candidates].slice(0, 4);
+}
+
+async function discoverContactEmail(pageUrl: string, html: string) {
+  const direct = extractPublicEmail(html);
+  if (isUsableBusinessEmail(direct)) return direct;
+  for (const candidate of contactCandidates(pageUrl, html)) {
+    try {
+      const response = await fetch(candidate, {
+        headers: { "User-Agent": "VibeLytixGrowthBot/1.0 (+https://vibelytix.lol)" },
+        redirect: "follow",
+        signal: AbortSignal.timeout(8000)
+      });
+      if (!response.ok || !response.headers.get("content-type")?.includes("text/html")) continue;
+      const email = extractPublicEmail(await response.text());
+      if (isUsableBusinessEmail(email)) return email;
+    } catch {}
+  }
+  return null;
 }
 
 function relevanceScore(url: string, html: string) {
@@ -220,7 +269,7 @@ async function discoverProspects(database: Database, limit: number) {
   });
   if (!response.ok) return { discovered: 0 };
 
-  const links = extractLinks(await response.text()).slice(0, limit);
+  const links = extractLinks(await response.text()).slice(0, Math.max(limit * 2, limit));
   let discovered = 0;
 
   for (const url of links) {
@@ -234,7 +283,7 @@ async function discoverProspects(database: Database, limit: number) {
       const html = await page.text();
       const score = relevanceScore(url, html);
       if (score < 55) continue;
-      const email = extractPublicEmail(html);
+      const email = await discoverContactEmail(url, html);
 
       const { error } = await database.from("backlink_prospects").upsert({
         url,
@@ -247,11 +296,22 @@ async function discoverProspects(database: Database, limit: number) {
       }, { onConflict: "url", ignoreDuplicates: true });
 
       if (!error) discovered += 1;
+      if (discovered >= limit) break;
     } catch {
       // Discovery continues when an individual site is unavailable.
     }
   }
   return { discovered };
+}
+
+async function sendOperatingReport(summary: Record<string, unknown>) {
+  if (!env.RESEND_API_KEY || !env.PAYMENT_NOTIFICATION_EMAIL) return { sent: 0, reason: "email_not_configured" };
+  const result = await sendEmail({
+    to: env.PAYMENT_NOTIFICATION_EMAIL,
+    subject: `VibeLytix autonomous run — ${new Date().toISOString().slice(0, 10)}`,
+    html: `<h2>VibeLytix daily automation report</h2><p>The scheduled non-payment growth pipeline completed.</p><pre>${escapeHtml(JSON.stringify(summary, null, 2)).slice(0, 12000)}</pre><p>Payment verification remains intentionally manual.</p>`
+  });
+  return { sent: result.delivered ? 1 : 0 };
 }
 
 async function publishOwnResource(database: Database) {
@@ -680,7 +740,9 @@ export async function runGrowthWorker() {
         updated_at: new Date().toISOString()
       }).in("id", core.distributionItemIds);
     }
-    const summary = { core, resource, discovery, outreach, followUps, verification, externalDistribution, indexing, webSub };
+    const operatingSummary = { core, resource, discovery, outreach, followUps, verification, externalDistribution, indexing, webSub };
+    const reporting = await sendOperatingReport(operatingSummary).catch((reportError) => ({ sent: 0, error: text(reportError) }));
+    const summary = { ...operatingSummary, reporting };
 
     await database.from("autopilot_runs").update({
       status: "completed",

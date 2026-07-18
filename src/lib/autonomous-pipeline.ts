@@ -249,7 +249,7 @@ async function executeJob(database: Db, job: ClaimedJob) {
 export async function runAutonomousPipeline() {
   const database = createAdminClient();
   const { data: run, error } = await database.from("autopilot_runs").insert({
-    run_type: "v12-agentic-growth-os", status: "started", summary: { stage: "enqueue" }
+    run_type: "v13-autonomous-growth-os", status: "started", summary: { stage: "enqueue" }
   }).select("id").single();
   if (error) throw error;
   try {

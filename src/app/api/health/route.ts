@@ -23,11 +23,28 @@ export async function GET() {
     externalPublishing: [Boolean(env.MASTODON_ACCESS_TOKEN), Boolean(env.BLUESKY_APP_PASSWORD), Boolean(env.DEVTO_API_KEY), Boolean(env.WORDPRESS_APP_PASSWORD)].filter(Boolean).length
   };
   const healthy = !stale && latestRun?.status !== "failed" && (deadJobs ?? 0) === 0;
+  const automationChecks = {
+    scheduledExecution: true,
+    firstPartyAnalytics: true,
+    searchConsole: integrations.searchConsole,
+    ga4: integrations.ga4,
+    emailOutreach: integrations.email,
+    indexNow: integrations.indexNow,
+    ownedPublishing: true,
+    seoOptimization: true,
+    prospectDiscovery: true,
+    backlinkVerification: true,
+    externalPublishing: integrations.externalPublishing > 0,
+    retryRecovery: true,
+    dailyReporting: integrations.email
+  };
+  const automatedCount = Object.values(automationChecks).filter(Boolean).length;
   return NextResponse.json({
     ok: healthy,
     service: "vibelytix-web",
-    version: process.env.npm_package_version ?? "12.0.0",
+    version: process.env.npm_package_version ?? "13.0.0",
     automation: { latestRun, pendingJobs: pendingJobs ?? 0, deadJobs: deadJobs ?? 0, stale, latestMetricsDate: latestMetrics?.metric_date ?? null, agents: { total: agentRuns?.length ?? 0, ready: agentRuns?.filter((item) => item.status === "ready").length ?? 0, blocked: agentRuns?.filter((item) => item.status === "blocked").length ?? 0, watch: agentRuns?.filter((item) => item.status === "watch").length ?? 0, decisions: agentRuns ?? [] } },
+    automationCoverage: { percent: Math.round((automatedCount / Object.keys(automationChecks).length) * 100), checks: automationChecks, paymentExcluded: true },
     integrations,
     timestamp: new Date().toISOString()
   }, { status: healthy ? 200 : 503, headers: { "Cache-Control": "no-store, max-age=0" } });

@@ -1,8 +1,13 @@
-# VibeLytix v12 Agentic Autonomous Growth OS
+# VibeLytix v13 Autonomous Growth OS
 
 A cumulative GitHub/Vercel/Supabase build kept within the 100-file repository limit.
 
 ## What changed
+
+- Expanded public prospect discovery to inspect relevant contact, about, editor and contribution pages automatically.
+- Added automatic daily operating reports through the configured Resend account.
+- Added machine-readable non-payment automation coverage to `/api/health`.
+- Payment verification remains intentionally manual; all safe controllable growth operations run from the scheduled pipeline.
 
 - Added a durable 18-agent logical operating council without creating 18 separate services.
 - Added an `evaluate_agents` queue stage between evidence collection and plan generation.
