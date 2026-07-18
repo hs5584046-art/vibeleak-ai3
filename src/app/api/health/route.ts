@@ -16,6 +16,7 @@ export async function GET() {
   ]);
   const stale = !latestRun?.started_at || latestRun.started_at < staleCutoff;
   const integrations = {
+    ga4Tracking: Boolean(env.NEXT_PUBLIC_GA_MEASUREMENT_ID),
     searchConsole: Boolean(env.GOOGLE_SEARCH_CONSOLE_ACCESS_TOKEN || (env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET && env.GOOGLE_OAUTH_REFRESH_TOKEN)),
     ga4: Boolean(env.GA4_PROPERTY_ID && (env.GOOGLE_ANALYTICS_ACCESS_TOKEN || (env.GOOGLE_OAUTH_CLIENT_ID && env.GOOGLE_OAUTH_CLIENT_SECRET && env.GOOGLE_OAUTH_REFRESH_TOKEN))),
     email: Boolean(env.RESEND_API_KEY),
@@ -27,7 +28,8 @@ export async function GET() {
     scheduledExecution: true,
     firstPartyAnalytics: true,
     searchConsole: integrations.searchConsole,
-    ga4: integrations.ga4,
+    ga4Tracking: integrations.ga4Tracking,
+    ga4ReportingApi: integrations.ga4,
     emailOutreach: integrations.email,
     indexNow: integrations.indexNow,
     ownedPublishing: true,

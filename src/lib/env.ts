@@ -1,15 +1,19 @@
 import { z } from "zod";
+import { randomBytes } from "node:crypto";
+
+const ephemeralSecret = () => randomBytes(32).toString("hex");
 
 const schema = z.object({
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   NEXT_PUBLIC_SUPPORT_EMAIL: z.email().default("support@vibelytix.lol"),
   NEXT_PUBLIC_UPI_ID: z.string().min(3).default("demo@upi"),
   NEXT_PUBLIC_UPI_NAME: z.string().min(1).default("VibeLytix"),
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: z.string().regex(/^G-[A-Z0-9]+$/).default("G-70QB3YH1L2"),
   NEXT_PUBLIC_SUPABASE_URL: z.url().default("https://example.supabase.co"),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1).default("development-publishable-key"),
-  SUPABASE_SECRET_KEY: z.string().min(1).default("development-secret-key"),
+  SUPABASE_SECRET_KEY: z.string().min(1).default(ephemeralSecret),
   ADMIN_EMAILS: z.string().default("owner@example.com"),
-  PAYMENT_TOKEN_SECRET: z.string().min(32).default("development-secret-change-before-prod"),
+  PAYMENT_TOKEN_SECRET: z.string().min(32).default(ephemeralSecret),
   PAYMENT_NOTIFICATION_EMAIL: z.email().default("owner@example.com"),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("VibeLytix <reports@vibelytix.lol>"),
@@ -42,6 +46,7 @@ const parsed = schema.safeParse({
   NEXT_PUBLIC_SUPPORT_EMAIL: process.env.NEXT_PUBLIC_SUPPORT_EMAIL,
   NEXT_PUBLIC_UPI_ID: process.env.NEXT_PUBLIC_UPI_ID,
   NEXT_PUBLIC_UPI_NAME: process.env.NEXT_PUBLIC_UPI_NAME,
+  NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
   NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY,
