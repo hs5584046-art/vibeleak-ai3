@@ -32,7 +32,7 @@ const schema = z.object({
   GOOGLE_OAUTH_CLIENT_SECRET: z.string().min(10).optional(),
   GOOGLE_OAUTH_REFRESH_TOKEN: z.string().min(10).optional(),
   GOOGLE_ANALYTICS_ACCESS_TOKEN: z.string().min(20).optional(),
-  GA4_PROPERTY_ID: z.string().min(3).optional(),
+  GA4_PROPERTY_ID: z.string().regex(/^\d+$/).default("546133958"),
   AFFILIATE_RELATIONSHIP_BOOK: z.url().optional(),
   AFFILIATE_RELATIONSHIP_COURSE: z.url().optional(),
   AFFILIATE_CAREER_BOOK: z.url().optional(),
