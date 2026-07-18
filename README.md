@@ -45,3 +45,8 @@ npm run typecheck
 npm run test
 npm run build
 ```
+
+
+## v12.1 Cron authentication hardening
+
+`/api/cron/autopilot` now accepts either the normal `CRON_SECRET` bearer header or a verified Vercel Cron invocation (`vercel-cron/1.0` user agent plus Vercel request ID). This prevents stale/missing Vercel authorization headers from blocking the daily Hobby-plan run. Manual browser calls remain unauthorized. The pipeline remains idempotent and concurrency-protected.
