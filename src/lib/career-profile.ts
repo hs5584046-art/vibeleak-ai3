@@ -5,7 +5,7 @@ export const defaultCareerProfile: CareerAgentProfile = {
   headline: "International Business Development and Foreign Markets Leader",
   currentRole: "Assistant Director – Foreign Markets",
   location: "Niš, Serbia",
-  targetLocations: ["Serbia", "Europe", "European Union", "Remote", "Netherlands", "Germany", "Poland", "Romania", "Slovenia", "Slovakia", "Malta", "Estonia", "Latvia", "Lithuania", "Sweden", "Greece"],
+  targetLocations: ["Niš", "Nis", "Serbia", "Europe", "European Union", "Remote Europe", "Remote", "Netherlands", "Germany", "Poland", "Romania", "Slovenia", "Slovakia", "Malta", "Estonia", "Latvia", "Lithuania", "Sweden", "Greece"],
   targetRoles: [
     "international business development",
     "business development manager",
