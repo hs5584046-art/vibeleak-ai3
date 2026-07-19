@@ -311,6 +311,28 @@ export const seoLandingPages = [
   faqs:readonly (readonly [string,string])[];
 }[];
 
+// Keep only the strongest, distinct commercial-intent landing pages indexable.
+// The remaining variants stay available for users but are excluded from search
+// until first-party evidence justifies a genuinely unique treatment.
+export const indexableSeoLandingSlugs = new Set([
+  "free-personality-test",
+  "personality-test-india",
+  "relationship-compatibility-test",
+  "relationship-communication-test",
+  "attachment-style-test",
+  "emotional-intelligence-test",
+  "communication-style-test",
+  "career-personality-test",
+  "career-alignment-test",
+  "leadership-style-test",
+  "personal-growth-assessment",
+  "decision-making-style-test"
+]);
+
+export const indexableSeoLandingPages = seoLandingPages.filter((page) =>
+  indexableSeoLandingSlugs.has(page.slug)
+);
+
 export function getLearningArticle(slug:string) {
   return learningArticles.find((article) => article.slug === slug);
 }

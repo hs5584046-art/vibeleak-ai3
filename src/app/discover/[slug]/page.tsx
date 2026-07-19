@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Footer } from "@/components/site/footer";
 import { Header } from "@/components/site/header";
 import { ArrowRightIcon, CheckIcon, ShieldIcon } from "@/components/ui/icons";
-import { getSeoLandingPage, seoLandingPages } from "@/lib/content";
+import { getSeoLandingPage, indexableSeoLandingSlugs, seoLandingPages } from "@/lib/content";
 
 export function generateStaticParams() {
   return seoLandingPages.map((page) => ({ slug: page.slug }));
@@ -16,6 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug:stri
   return {
     title: page.title,
     description: page.description,
+    robots: indexableSeoLandingSlugs.has(page.slug) ? { index:true, follow:true } : { index:false, follow:true },
     alternates:{ canonical:`/discover/${page.slug}` },
     openGraph:{ title:page.title, description:page.description, type:"website" }
   };
@@ -57,6 +58,20 @@ export default async function SeoLandingPage({ params }: { params:Promise<{slug:
             <p>{section.body}</p>
           </article>
         ))}
+      </section>
+      <section className="seo-content-sections">
+        <article>
+          <h2>What you receive before paying</h2>
+          <p>You can complete every question and see a personal result type, summary and leading dimensions without entering payment details. The optional report adds deeper interpretation, watchouts, scenarios and a practical action plan.</p>
+        </article>
+        <article>
+          <h2>How VibeLytix calculates the result</h2>
+          <p>Answers contribute to transparent behavioural dimensions connected to {page.focus}. The result describes relative patterns in your responses; it does not infer hidden facts, diagnose a condition or claim permanent certainty.</p>
+        </article>
+        <article>
+          <h2>Who this assessment is designed for</h2>
+          <p>{page.audience} can use the preview to name a current pattern, compare it with real examples and choose one practical experiment. The result is most useful when combined with context and observable behaviour.</p>
+        </article>
       </section>
       <section className="seo-explainer">
         <div>

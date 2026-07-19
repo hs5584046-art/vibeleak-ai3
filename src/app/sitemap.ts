@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { env } from "@/lib/env";
 import { expansionAssessments } from "@/lib/assessment/expansion";
-import { learningArticles, seoLandingPages } from "@/lib/content";
+import { indexableSeoLandingPages, learningArticles } from "@/lib/content";
 import { revenueProducts } from "@/lib/products";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const assessmentRoutes = expansionAssessments.map((item) => `/assessments/${item.id}`);
   const articleRoutes = learningArticles.map((item) => `/learn/${item.slug}`);
-  const landingRoutes = seoLandingPages.map((item) => `/discover/${item.slug}`);
+  const landingRoutes = indexableSeoLandingPages.map((item) => `/discover/${item.slug}`);
   const productRoutes = revenueProducts.map((item) => `/products/${item.slug}`);
   const { data: resources } = await createAdminClient()
     .from("autonomous_resources")

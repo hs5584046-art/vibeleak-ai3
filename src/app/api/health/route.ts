@@ -44,7 +44,7 @@ export async function GET() {
   return NextResponse.json({
     ok: healthy,
     service: "vibelytix-web",
-    version: process.env.npm_package_version ?? "13.0.0",
+    version: process.env.npm_package_version ?? "14.0.0",
     automation: { latestRun, pendingJobs: pendingJobs ?? 0, deadJobs: deadJobs ?? 0, stale, latestMetricsDate: latestMetrics?.metric_date ?? null, agents: { total: agentRuns?.length ?? 0, ready: agentRuns?.filter((item) => item.status === "ready").length ?? 0, blocked: agentRuns?.filter((item) => item.status === "blocked").length ?? 0, watch: agentRuns?.filter((item) => item.status === "watch").length ?? 0, decisions: agentRuns ?? [] } },
     automationCoverage: { percent: Math.round((automatedCount / Object.keys(automationChecks).length) * 100), checks: automationChecks, paymentExcluded: true },
     integrations,
