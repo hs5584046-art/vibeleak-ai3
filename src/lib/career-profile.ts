@@ -38,6 +38,6 @@ export const defaultCareerProfile: CareerAgentProfile = {
     "human resources"
   ],
   industries: ["recycling", "environmental services", "waste management", "manufacturing", "technology", "consulting", "staffing"],
-  email: process.env.CAREER_AGENT_SENDER_EMAIL ?? "himanshu.singh@ereciklaza.com",
+  email: process.env.CAREER_AGENT_SENDER_EMAIL ?? "hrj107@gmail.com",
   resumeUrl: process.env.CAREER_AGENT_RESUME_URL
 };
