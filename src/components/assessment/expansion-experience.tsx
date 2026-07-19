@@ -19,7 +19,7 @@ type Session = { sessionId: string; sessionToken: string; preview: Preview };
 type Payment = { id: string; token: string };
 type Stage = "intro" | "questions" | "submitting" | "preview" | "checkout" | "status" | "report";
 
-function track(eventName: "assessment_started" | "assessment_completed" | "checkout_started", assessmentId: string) {
+function track(eventName: "assessment_started" | "assessment_completed" | "result_shared" | "checkout_started", assessmentId: string) {
   void fetch("/api/events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -43,6 +43,18 @@ export function ExpansionExperience({ assessment }: { assessment: ExpansionAsses
   const [payment, setPayment] = useState<Payment | null>(null);
   const [report, setReport] = useState<ExpansionReport | null>(null);
   const [ready, setReady] = useState(false);
+
+  async function sharePreview(title: string) {
+    const url = `${window.location.origin}/assessments/${assessment.id}`;
+    const text = `I completed the ${assessment.title} assessment on VibeLytix. Try the free personal preview.`;
+    try {
+      if (navigator.share) await navigator.share({ title, text, url });
+      else await navigator.clipboard.writeText(`${text} ${url}`);
+      track("result_shared", assessment.id);
+    } catch {
+      // Closing the native share sheet is not an application error.
+    }
+  }
   const [error, setError] = useState("");
 
   const unlock = useCallback((value: ExpansionReport) => {
@@ -256,6 +268,7 @@ export function ExpansionExperience({ assessment }: { assessment: ExpansionAsses
         <button type="button" className="button button-primary" onClick={() => { track("checkout_started", assessment.id); setStage("checkout"); }}>
           Unlock full report · ₹{assessment.pricePaise / 100} <ArrowRightIcon />
         </button>
+        <button type="button" className="button button-secondary" onClick={() => void sharePreview(session.preview.title)}>Share free assessment</button>
         <button type="button" className="button button-secondary" onClick={reset}>Retake</button>
       </div>
     </div>

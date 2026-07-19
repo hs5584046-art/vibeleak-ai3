@@ -16,6 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: product.title,
     description: product.description,
+    alternates: { canonical: `/products/${product.slug}` },
+    robots: { index: true, follow: true },
     openGraph: { title: product.title, description: product.description, type: "website" }
   };
 }
@@ -64,6 +66,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         </section>
 
         <ProductExperience product={product} />
+
+        <section className="seo-content-sections" aria-label={`${product.title} buying guide`}>
+          <article><h2>Who this is for</h2><p>{product.audience}. It is designed for someone who wants a practical system tied to a current outcome, rather than another generic personality label.</p></article>
+          <article><h2>What you receive</h2><p>{product.outcome} Your answers personalise the priorities, likely blockers, scenarios, seven-day plan and thirty-day roadmap that appear in the final report.</p></article>
+          <article><h2>Before you purchase</h2><p>Start with the related free assessment to confirm the direction is useful. This product is educational guidance, not professional advice or a guaranteed career, business, personal or relationship outcome.</p></article>
+        </section>
       </main>
       <Footer />
     </>

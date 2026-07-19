@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const schema = z.object({
-  eventName: z.enum(["assessment_started", "assessment_completed", "checkout_started", "payment_submitted"]),
+  eventName: z.enum(["assessment_started", "assessment_completed", "result_shared", "checkout_started", "payment_submitted"]),
   path: z.string().max(300),
   metadata: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional()
 });

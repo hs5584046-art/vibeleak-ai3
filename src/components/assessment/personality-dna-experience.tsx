@@ -42,6 +42,15 @@ type SavedPayment = {
   token: string;
 };
 
+function track(eventName: "assessment_started" | "assessment_completed" | "result_shared" | "checkout_started") {
+  void fetch("/api/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    keepalive: true,
+    body: JSON.stringify({ eventName, path: window.location.pathname, metadata: { assessmentId: "personality-dna" } })
+  });
+}
+
 export function PersonalityDnaExperience() {
   const [stage, setStage] = useState<Stage>("intro");
   const [index, setIndex] = useState(0);
@@ -52,6 +61,18 @@ export function PersonalityDnaExperience() {
   const [report, setReport] = useState<PersonalityReport | null>(null);
   const [restored, setRestored] = useState(false);
   const [error, setError] = useState("");
+
+  async function sharePreview(title: string) {
+    const url = `${window.location.origin}/assessments/personality-dna`;
+    const text = "I completed the Personality DNA assessment on VibeLytix. Try the free personal preview.";
+    try {
+      if (navigator.share) await navigator.share({ title, text, url });
+      else await navigator.clipboard.writeText(`${text} ${url}`);
+      track("result_shared");
+    } catch {
+      // Closing the native share sheet is not an application error.
+    }
+  }
 
   const unlockReport = useCallback((nextReport: PersonalityReport) => {
     window.localStorage.setItem(REPORT_KEY, JSON.stringify(nextReport));
@@ -191,6 +212,7 @@ export function PersonalityDnaExperience() {
     const secureSession = await createSecureSession(nextAnswers);
     if (secureSession) {
       setPreview(secureSession.preview);
+      track("assessment_completed");
       setStage("preview");
     } else {
       setStage("questions");
@@ -198,6 +220,7 @@ export function PersonalityDnaExperience() {
   }
 
   async function openCheckout() {
+    track("checkout_started");
     setStage("checkout");
     if (!session) {
       await createSecureSession(answers);
@@ -238,7 +261,7 @@ export function PersonalityDnaExperience() {
       {stage === "intro" ? (
         <Intro
           hasReport={Boolean(report)}
-          onStart={() => setStage("questions")}
+          onStart={() => { track("assessment_started"); setStage("questions"); }}
           onViewReport={() => setStage("report")}
         />
       ) : null}
@@ -329,6 +352,7 @@ export function PersonalityDnaExperience() {
             <button type="button" className="button button-primary" onClick={() => void openCheckout()}>
               Unlock full report · ₹149 <ArrowRightIcon />
             </button>
+            <button type="button" className="button button-secondary" onClick={() => void sharePreview(preview.profile.title)}>Share free assessment</button>
             <button type="button" className="button button-secondary" onClick={resetAssessment}>
               Retake assessment
             </button>

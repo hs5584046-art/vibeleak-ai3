@@ -61,3 +61,8 @@ npm run build
 - Keeps the strongest 12 distinct commercial-intent discovery pages in the sitemap while marking thin variants `noindex,follow` until they earn genuinely unique content.
 - Adds server-rendered assessment explanations, methodology, free-preview clarity and relevant product links so search visitors can evaluate value before checkout.
 - Adds structured application data to the flagship Personality DNA assessment and expands transparent, people-first content across assessment and discovery pages.
+
+## v14.1 Organic acquisition and conversion loop
+
+- Adds privacy-safe native sharing to every free assessment preview and records completed/share funnel events for measurable viral acquisition.
+- Strengthens product canonicals, index directives, buying context and internal links from commercial discovery pages into relevant action products.

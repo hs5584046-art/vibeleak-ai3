@@ -25,6 +25,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug:stri
 export default async function SeoLandingPage({ params }: { params:Promise<{slug:string}> }) {
   const page = getSeoLandingPage((await params).slug);
   if (!page) notFound();
+  const relatedProduct = page.assessmentId === "career-alignment"
+    ? "/products/career-accelerator"
+    : page.assessmentId === "relationship-intelligence" || page.assessmentId === "attachment-style"
+      ? "/products/couple-compatibility"
+      : page.assessmentId === "leadership-style"
+        ? "/products/founder-os"
+        : "/products/personal-life-os";
 
   const schema = {
     "@context":"https://schema.org",
@@ -79,6 +86,10 @@ export default async function SeoLandingPage({ params }: { params:Promise<{slug:
           <h2>Useful reflection without fake certainty.</h2>
         </div>
         <p>VibeLytix reports explain patterns from your answers. They do not diagnose conditions, predict another person’s behaviour or guarantee a future outcome. Use the result as a structured prompt for better questions and decisions.</p>
+      </section>
+      <section className="seo-explainer">
+        <div><p className="eyebrow">From insight to action</p><h2>Use the free result first.</h2></div>
+        <p>Complete the assessment, compare the preview with recent real behaviour, and only then decide whether you need a deeper action system. <Link href={relatedProduct}>Explore the related personalised product</Link>.</p>
       </section>
       <section className="faq-list">
         {page.faqs.map(([question,answer]) => <details key={question}><summary><span>{question}</span><b>+</b></summary><p>{answer}</p></details>)}
