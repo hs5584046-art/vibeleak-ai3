@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/career-agent",
-      "schedule": "45 5 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }
