@@ -3,7 +3,10 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { env } from "@/lib/env";
 
-const FOLLOW_UP_DELAYS_DAYS = [7, 14] as const;
+const FOLLOW_UP_DELAYS_DAYS: Record<"initial" | "follow_up_1", number> = {
+  initial: 7,
+  follow_up_1: 14
+};
 
 type ProfileRow = {
   full_name: string;
@@ -73,12 +76,11 @@ async function scheduleFollowUp(
   profile: ProfileRow,
   sentAt: Date
 ) {
-  const supabase = createAdminClient();
-  const currentIndex = outreach.message_type === "initial" ? 0 : outreach.message_type === "follow_up_1" ? 1 : 2;
-  if (currentIndex >= 2) return;
+  if (outreach.message_type === "follow_up_2") return;
 
-  const nextType = currentIndex === 0 ? "follow_up_1" : "follow_up_2";
-  const delay = FOLLOW_UP_DELAYS_DAYS[currentIndex];
+  const supabase = createAdminClient();
+  const nextType = outreach.message_type === "initial" ? "follow_up_1" : "follow_up_2";
+  const delay = FOLLOW_UP_DELAYS_DAYS[outreach.message_type];
   const final = nextType === "follow_up_2";
   const body = [
     "Dear Hiring Team,",
@@ -144,7 +146,8 @@ export async function runCareerAgent() {
       .eq("status", "sent")
       .gte("sent_at", today.toISOString());
 
-    const remaining = Math.max(0, profile.daily_send_limit - (sentToday ?? 0));
+    const configuredLimit = Number.isFinite(profile.daily_send_limit) ? profile.daily_send_limit : 10;
+    const remaining = Math.max(0, configuredLimit - (sentToday ?? 0));
     if (!remaining) return { sent: 0, skipped: 0, status: "daily-limit-reached" };
 
     const { data: queued, error: queueError } = await supabase
