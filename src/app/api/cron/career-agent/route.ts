@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { env } from "@/lib/env";
+import { runCareerAgent } from "@/lib/career-agent-runner";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -11,21 +12,32 @@ function authorised(request: NextRequest): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  if (!authorised(request)) return NextResponse.json({ error: "Unauthorised." }, { status: 401 });
+  if (!authorised(request)) {
+    return NextResponse.json({ error: "Unauthorised." }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  }
 
-  return NextResponse.json({
-    ok: true,
-    service: "vibelytix-career-agent",
-    mode: "safe-discovery",
-    status: "foundation-ready",
-    message: "Career agent schema and matching engine are installed. Discovery connectors and authorised sending are enabled only when their credentials are configured.",
-    safeguards: {
-      duplicateSuppression: true,
-      replyStopsFollowUps: true,
-      unsubscribeStopsContact: true,
-      maximumFollowUps: 2,
-      followUpCadenceDays: [7, 14],
-      automaticPortalSubmission: false
-    }
-  }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+  try {
+    const result = await runCareerAgent();
+    return NextResponse.json(
+      {
+        ok: true,
+        service: "vibelytix-career-agent",
+        result,
+        safeguards: {
+          dailySendLimit: true,
+          duplicateSuppression: true,
+          replyAndOptOutSuppression: true,
+          maximumFollowUps: 2,
+          automaticPortalSubmission: false
+        }
+      },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
+  } catch (error) {
+    console.error("Career agent failed", error);
+    return NextResponse.json(
+      { ok: false, error: "Career agent execution failed." },
+      { status: 500, headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
+  }
 }
