@@ -90,10 +90,12 @@ values (
   'Himanshu Singh',
   'Assistant Director – Foreign Markets',
   'Niš, Serbia',
-  'himanshu.singh@ereciklaza.com',
+  'hrj107@gmail.com',
   array['International Business Development','Business Development Manager','Business Development Director','Commercial Manager','Partnerships Manager','Country Manager','Regional Manager'],
   array['Serbia','Remote','Germany','Netherlands','Poland','Romania','Slovenia','Slovakia','Malta','Estonia','Latvia','Lithuania','Sweden','Greece'],
   array['International business development','B2B lead generation','Market research','Commercial outreach','Proposal writing'],
   false
 )
-on conflict (id) do nothing;
+on conflict (id) do update
+set email = excluded.email,
+    updated_at = now();
