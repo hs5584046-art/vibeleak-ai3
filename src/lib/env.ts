@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 const ephemeralSecret = () => randomBytes(32).toString("hex");
 
 const schema = z.object({
-  NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
+  NEXT_PUBLIC_APP_URL: z.url().default("https://vibelytix.lol"),
   NEXT_PUBLIC_SUPPORT_EMAIL: z.email().default("support@vibelytix.lol"),
   NEXT_PUBLIC_UPI_ID: z.string().min(3).default("demo@upi"),
   NEXT_PUBLIC_UPI_NAME: z.string().min(1).default("VibeLytix"),
