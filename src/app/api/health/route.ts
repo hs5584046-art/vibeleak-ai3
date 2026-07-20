@@ -8,7 +8,7 @@ async function checkResendAccess() {
   if (!env.RESEND_API_KEY) return { configured: false, reachable: false, status: null };
 
   try {
-    const response = await fetch("https://api.resend.com/domains?limit=1", {
+    const response = await fetch("https://api.resend.com/domains", {
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}` },
       cache: "no-store",
       signal: AbortSignal.timeout(5000)
